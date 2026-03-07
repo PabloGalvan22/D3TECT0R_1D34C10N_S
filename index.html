@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espacio de Apoyo — Contigo Siempre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.0.2/wordcloud2.min.js"></script>
+<!-- Añadimos Tesseract.js para OCR en imágenes -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+<style>
+:root {
+  --sage: #6b8f71;
+  --sage-light: #a8c5ad;
+  --teal: #3d7a8a;
+  --teal-light: #7eb8c4;
+  --gold: #c8974a;
+  --gold-light: #e8c48a;
+  --cream: #faf6f0;
+  --warm-white: #fff9f2;
+  --text-dark: #2c2c3a;
+  --text-mid: #5a5a6e;
+  --text-light: #8a8a9e;
+  --red-alert: #c0392b;
+  --orange-alert: #e67e22;
+  --surface: rgba(255,255,255,0.85);
+  --card-bg: rgba(255,255,255,0.92);
+  --border: rgba(107,143,113,0.2);
+  --shadow: 0 8px 32px rgba(61,122,138,0.12);
+  --shadow-hover: 0 16px 48px rgba(61,122,138,0.22);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── BACKGROUND ─────────────────────────────── */
+.bg-layer {
+  position: fixed; inset:0; z-index:0; pointer-events:none;
+  background: linear-gradient(135deg, #e8f4e8 0%, #d4ecf0 40%, #f5ecd7 80%, #faf0e8 100%);
+}
+.bg-blob {
+  position: fixed; border-radius: 50%; filter: blur(80px); opacity:0.35; pointer-events:none; z-index:0;
+}
+.bg-blob-1 { width:600px; height:600px; background:radial-gradient(circle, var(--sage-light), transparent); top:-200px; left:-200px; animation: blobFloat 12s ease-in-out infinite alternate; }
+.bg-blob-2 { width:500px; height:500px; background:radial-gradient(circle, var(--teal-light), transparent); bottom:-150px; right:-150px; animation: blobFloat 15s ease-in-out 3s infinite alternate; }
+.bg-blob-3 { width:400px; height:400px; background:radial-gradient(circle, var(--gold-light), transparent); top:40%; left:40%; animation: blobFloat 18s ease-in-out 6s infinite alternate; }
+
+@keyframes blobFloat { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(30px,40px) scale(1.08);} }
+
+/* ─── SCREENS ─────────────────────────────────── */
+.screen { display:none; min-height:100vh; position:relative; z-index:1; }
+.screen.active { display:flex; flex-direction:column; }
+
+/* ─── SCREEN 1: LANDING ────────────────────────── */
+#s-landing {
+  align-items:center; justify-content:center;
+  padding: 40px 20px;
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+
+.landing-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 56px 48px 48px;
+  max-width: 760px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo-mark {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--sage), var(--teal));
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  margin: 0 auto 24px;
+  font-size: 28px; color: white;
+  box-shadow: 0 8px 24px rgba(107,143,113,0.4);
+}
+
+.landing-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+.landing-title span { color: var(--teal); }
+
+.landing-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-mid);
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 auto 40px;
+}
+
+.divider {
+  height:1px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 32px 0; border:none;
+}
+
+.choose-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.profile-card {
+  background: var(--warm-white);
+  border: 2px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  text-align: center;
+  position:relative; overflow:hidden;
+}
+.profile-card::before {
+  content:''; position:absolute; inset:0; opacity:0;
+  transition: opacity 0.3s;
+  border-radius: 16px;
+}
+.profile-card.joven::before   { background: linear-gradient(135deg, rgba(107,143,113,0.08), rgba(168,197,173,0.12)); }
+.profile-card.adulto::before  { background: linear-gradient(135deg, rgba(61,122,138,0.08), rgba(126,184,196,0.12)); }
+.profile-card.salud::before   { background: linear-gradient(135deg, rgba(200,151,74,0.08), rgba(232,196,138,0.12)); }
+.profile-card.maestro::before { background: linear-gradient(135deg, rgba(150,100,180,0.08), rgba(200,160,220,0.12)); }
+
+.profile-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+.profile-card:hover::before { opacity:1; }
+.profile-card:hover { border-color: var(--sage); }
+
+.profile-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  margin: 0 auto 14px;
+  font-size: 22px;
+}
+.joven .profile-icon   { background: rgba(107,143,113,0.15); color: var(--sage); }
+.adulto .profile-icon  { background: rgba(61,122,138,0.15);  color: var(--teal); }
+.salud .profile-icon   { background: rgba(200,151,74,0.15);  color: var(--gold); }
+.maestro .profile-icon { background: rgba(150,100,180,0.15); color: #9664b4; }
+
+.profile-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+.profile-desc {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.notice-box {
+  background: rgba(107,143,113,0.08);
+  border: 1px solid rgba(107,143,113,0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 0.85rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+.notice-box i { color: var(--sage); margin-right: 6px; }
+
+/* ─── SHARED HEADER ───────────────────────────── */
+.app-header {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex; align-items:center; justify-content:space-between;
+  height: 64px; position:sticky; top:0; z-index:100;
+}
+.header-brand {
+  display:flex; align-items:center; gap: 12px;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600;
+  color: var(--text-dark);
+}
+.header-dot {
+  width: 32px; height:32px; border-radius:50%;
+  background: linear-gradient(135deg, var(--sage), var(--teal));
+  display:flex; align-items:center; justify-content:center;
+  color:white; font-size:14px;
+}
+.header-badge {
+  font-size: 0.75rem; font-weight:600;
+  padding: 4px 12px; border-radius: 20px;
+  background: rgba(107,143,113,0.12);
+  color: var(--sage);
+}
+.btn-back {
+  background:none; border: 1px solid var(--border); border-radius:8px;
+  padding: 6px 14px; cursor:pointer; font-size:0.85rem;
+  color: var(--text-mid); display:flex; align-items:center; gap:6px;
+  transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+}
+.btn-back:hover { background: white; color: var(--teal); border-color: var(--teal); }
+
+/* ─── SCREEN 2: PERSONAL (JOVEN / ADULTO) ─────── */
+#s-personal { padding-bottom: 60px; }
+
+.personal-hero {
+  padding: 48px 24px 0;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  animation: fadeIn 0.6s ease;
+}
+.personal-hero h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.personal-hero p {
+  font-size: 1.05rem;
+  color: var(--text-mid);
+  line-height: 1.75;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+.personal-content {
+  max-width: 800px;
+  margin: 40px auto 0;
+  padding: 0 24px;
+}
+
+/* ─── STEP CARDS ──────────────────────────────── */
+.step-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 36px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.5s ease;
+}
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; font-weight:600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  display:flex; align-items:center; gap:10px;
+}
+.step-title .step-num {
+  width: 28px; height:28px; border-radius:50%;
+  background: linear-gradient(135deg, var(--sage), var(--teal));
+  color:white; font-size:0.75rem; font-family:'DM Sans',sans-serif;
+  font-weight:600; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.step-sub { font-size:0.9rem; color:var(--text-light); margin-bottom: 24px; }
+
+/* Check-in feelings */
+.feelings-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.feeling-btn {
+  background: var(--warm-white);
+  border: 2px solid var(--border);
+  border-radius: 14px; padding: 14px 10px;
+  cursor:pointer; text-align:center;
+  transition: all 0.25s; font-family:'DM Sans',sans-serif;
+  width:100%;
+}
+.feeling-btn .feel-icon { font-size:1.8rem; display:block; margin-bottom:6px; }
+.feeling-btn .feel-label { font-size:0.8rem; color:var(--text-mid); font-weight:500; }
+.feeling-btn:hover, .feeling-btn.selected {
+  border-color: var(--teal);
+  background: rgba(61,122,138,0.08);
+  transform: translateY(-2px);
+}
+.feeling-btn.selected .feel-label { color: var(--teal); font-weight:600; }
+
+.textarea-field {
+  width:100%; padding:16px 18px;
+  background: var(--warm-white);
+  border: 1.5px solid var(--border);
+  border-radius: 14px; resize: vertical;
+  font-family: 'DM Sans', sans-serif; font-size:0.95rem;
+  color: var(--text-dark); line-height:1.6;
+  transition: border-color 0.2s;
+  min-height: 110px;
+}
+.textarea-field:focus { outline:none; border-color: var(--teal); }
+.textarea-field::placeholder { color: var(--text-light); }
+
+/* Why psych section */
+.why-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 10px;
+}
+.why-item {
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px;
+}
+.why-item i { font-size: 1.4rem; margin-bottom: 10px; display:block; }
+.why-item.color-sage i { color: var(--sage); }
+.why-item.color-teal i { color: var(--teal); }
+.why-item.color-gold i { color: var(--gold); }
+.why-item.color-purple i { color: #9664b4; }
+.why-item strong { font-size:0.92rem; display:block; margin-bottom:4px; color: var(--text-dark); }
+.why-item p { font-size:0.82rem; color: var(--text-light); line-height:1.5; }
+
+/* Response box */
+.response-box {
+  background: linear-gradient(135deg, rgba(107,143,113,0.1), rgba(61,122,138,0.08));
+  border: 1px solid rgba(107,143,113,0.3);
+  border-radius: 16px; padding: 24px;
+  margin-top: 20px; display:none;
+}
+.response-box.visible { display:block; animation: fadeIn 0.5s ease; }
+.response-box p { font-size:0.95rem; color:var(--text-dark); line-height:1.7; margin-bottom:12px; }
+.response-box p:last-child { margin:0; }
+
+/* Resources */
+.resources-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.resource-card {
+  background: var(--warm-white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 20px;
+  transition: all 0.25s;
+}
+.resource-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); border-color: var(--teal-light); }
+.resource-card .rc-type {
+  font-size: 0.72rem; font-weight:600; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--text-light);
+  margin-bottom: 8px;
+}
+.resource-card .rc-name {
+  font-weight:600; font-size:0.95rem; color:var(--text-dark);
+  margin-bottom: 4px;
+}
+.resource-card .rc-phone {
+  font-size: 1.1rem; font-weight:700;
+  color: var(--teal);
+  display:flex; align-items:center; gap:6px;
+}
+.resource-card .rc-desc {
+  font-size: 0.78rem; color:var(--text-light);
+  margin-top: 6px; line-height:1.5;
+}
+
+/* Courage button */
+.courage-section {
+  text-align:center; margin-top: 40px; padding: 40px;
+  background: linear-gradient(135deg, rgba(61,122,138,0.08), rgba(107,143,113,0.06));
+  border: 1px solid rgba(107,143,113,0.2);
+  border-radius: 24px;
+}
+.courage-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; color: var(--text-dark);
+  margin-bottom: 12px;
+}
+.courage-section p {
+  font-size:0.95rem; color:var(--text-mid);
+  line-height:1.7; max-width:480px; margin:0 auto 28px;
+}
+.btn-primary {
+  display: inline-flex; align-items:center; gap:10px;
+  background: linear-gradient(135deg, var(--sage), var(--teal));
+  color:white; border:none; border-radius:16px;
+  padding: 16px 36px; font-size:1.05rem; font-weight:600;
+  cursor:pointer; transition: all 0.3s; font-family:'DM Sans',sans-serif;
+  box-shadow: 0 6px 24px rgba(61,122,138,0.35);
+  text-decoration:none;
+}
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(61,122,138,0.45); }
+
+.send-btn {
+  display: inline-flex; align-items:center; gap:8px;
+  background: linear-gradient(135deg, var(--teal), var(--sage));
+  color:white; border:none; border-radius:12px;
+  padding: 12px 28px; font-size:0.95rem; font-weight:600;
+  cursor:pointer; transition: all 0.3s; margin-top:14px;
+  font-family:'DM Sans',sans-serif;
+}
+.send-btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(61,122,138,0.35); }
+
+/* ─── SCREEN 3: PROFESSIONAL ──────────────────── */
+#s-professional {
+  background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+  color: #e0e0e0; padding-bottom: 60px;
+}
+
+#s-professional .app-header {
+  background: rgba(26,26,46,0.95);
+  border-color: rgba(0,212,255,0.2);
+}
+#s-professional .header-brand { color: #e0e0e0; }
+#s-professional .header-badge { background: rgba(0,212,255,0.12); color: #00d4ff; }
+#s-professional .btn-back { border-color: rgba(0,212,255,0.3); color: #a0a0a0; background:none; }
+#s-professional .btn-back:hover { background: rgba(0,212,255,0.1); color: #00d4ff; }
+
+.pro-container { max-width:1200px; margin:0 auto; padding: 32px 24px; }
+
+.pro-title-section { text-align:center; margin-bottom:32px; }
+.pro-title-section h1 { font-family:'Playfair Display',serif; font-size:2.2rem; color:#00d4ff; text-shadow: 0 0 20px rgba(0,212,255,0.4); margin-bottom: 8px; }
+.pro-title-section p { color:#a0a0a0; font-size:1rem; }
+
+.pro-sidebar {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 18px; padding: 28px;
+  margin-bottom: 28px;
+}
+.pro-sidebar h3 { color:#00d4ff; font-size:1rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+.file-uploader {
+  background: rgba(255,255,255,0.03);
+  border: 2px dashed rgba(0,212,255,0.4);
+  border-radius: 12px; padding: 32px;
+  text-align:center; cursor:pointer; transition: all 0.3s; margin-bottom:16px;
+}
+.file-uploader:hover { background: rgba(0,212,255,0.05); border-color: #00d4ff; }
+.file-uploader input { display:none; }
+.file-uploader i { font-size:2.5rem; color:#00d4ff; display:block; margin-bottom:10px; }
+.file-uploader p { color:#a0a0a0; font-size:0.9rem; }
+.file-uploader small { color:#606070; }
+
+/* Barra de progreso OCR */
+.ocr-progress {
+  background: rgba(0,212,255,0.1);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ocr-progress i { color: #00d4ff; }
+
+.pro-select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,212,255,0.4);
+  border-radius: 8px; padding: 12px 16px;
+  color: #e0e0e0; width:100%; margin-bottom: 16px; cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+.pro-select option { background:#1a1a2e; }
+
+.pro-btn {
+  width:100%; background: linear-gradient(90deg, #00d4ff, #0099cc);
+  border:none; border-radius:10px; padding:13px;
+  color:white; font-size:1rem; font-weight:600;
+  cursor:pointer; transition: all 0.3s; font-family:'DM Sans',sans-serif;
+}
+.pro-btn:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(0,212,255,0.4); transform:translateY(-1px); }
+.pro-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+.pro-info-box {
+  background: rgba(0,212,255,0.07);
+  border-left: 3px solid #00d4ff;
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px; margin-top: 16px;
+  font-size:0.85rem; color:#a0a0a0; line-height:1.6;
+}
+.pro-info-box h4 { color:#00d4ff; margin-bottom:6px; font-size:0.9rem; }
+
+.pro-metrics { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-bottom:28px; }
+.pro-metric-card {
+  background: rgba(0,212,255,0.07);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 14px; padding: 22px; text-align:center;
+}
+.pro-metric-label { font-size:0.9rem; color:#a0a0a0; margin-bottom:6px; }
+.pro-metric-value { font-size:2.2rem; font-weight:700; color:#00d4ff; }
+
+.pro-charts { display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:28px; }
+.pro-chart-card {
+  background: rgba(255,255,255,0.02);
+  border-radius: 14px; padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.pro-chart-card h3 { color:#00d4ff; font-size:0.95rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.pro-chart-card canvas { width:100% !important; height:auto !important; min-height:220px; max-height:320px; }
+
+.wordcloud-wrapper { width:100%; height:320px; background:rgba(0,0,0,0.2); border-radius:10px; overflow:hidden; }
+#wordcloud-canvas { width:100%; height:100%; }
+
+.pro-table-wrap { overflow-x:auto; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.3); max-height:500px; overflow-y:auto; }
+table { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); }
+th { background:rgba(0,212,255,0.12); color:#00d4ff; padding:13px 15px; font-weight:600; position:sticky; top:0; backdrop-filter:blur(10px); font-size:0.9rem; }
+td { padding:11px 15px; border-bottom:1px solid rgba(0,212,255,0.12); font-size:0.88rem; }
+
+.row-extremo { background:#FF000025 !important; border-left:3px solid #FF0000; }
+.row-alto    { background:#8B000025 !important; border-left:3px solid #8B0000; }
+.row-medio   { background:#aa660025 !important; border-left:3px solid #aa6600; }
+.row-bajo    { background:#1E3F2025 !important; border-left:3px solid #1E3F20; }
+.row-revision{ background:#3102c025 !important; border-left:3px solid #3102c0; }
+.row-descartado { background:#8602af25 !important; border-left:3px solid #8602af; }
+
+.spinner {
+  width:40px; height:40px;
+  border: 3px solid rgba(0,212,255,0.2); border-top:3px solid #00d4ff;
+  border-radius:50%; animation: spin 0.9s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin { to{transform:rotate(360deg);} }
+
+/* ─── GUIDANCE CARD (FOR PROS) ───────────────── */
+.guidance-section {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(200,151,74,0.3);
+  border-radius: 18px; padding:28px; margin-top:28px;
+}
+.guidance-section h3 { color: #e8c48a; font-size:1rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.guidance-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.guidance-item {
+  background: rgba(255,255,255,0.03);
+  border-radius:12px; padding:16px;
+  border-left: 3px solid rgba(200,151,74,0.5);
+}
+.guidance-item strong { color:#e8c48a; font-size:0.88rem; display:block; margin-bottom:5px; }
+.guidance-item p { font-size:0.82rem; color:#9090a0; line-height:1.5; }
+
+/* ─── CRISIS BANNER ───────────────────────────── */
+.crisis-banner {
+  background: linear-gradient(135deg, rgba(192,57,43,0.12), rgba(231,76,60,0.08));
+  border: 1.5px solid rgba(192,57,43,0.3);
+  border-radius: 16px; padding: 20px 24px;
+  margin-bottom: 24px; display:flex; align-items:center; gap:16px;
+}
+.crisis-banner i { font-size:1.8rem; color: var(--red-alert); flex-shrink:0; }
+.crisis-banner strong { display:block; color: var(--text-dark); font-size:0.95rem; margin-bottom:3px; }
+.crisis-banner span { font-size:0.85rem; color:var(--text-mid); line-height:1.5; }
+.crisis-phone { font-size:1.3rem; font-weight:700; color:var(--red-alert); white-space:nowrap; margin-left:auto; }
+
+/* ─── TESTIMONIALS (for personal) ───────────────── */
+.quote-card {
+  background: linear-gradient(135deg, rgba(61,122,138,0.06), rgba(107,143,113,0.04));
+  border: 1px solid rgba(107,143,113,0.2);
+  border-radius: 16px; padding:24px;
+  margin-bottom: 14px;
+}
+.quote-card blockquote {
+  font-family:'Playfair Display',serif;
+  font-size:1rem; font-style:italic;
+  color:var(--text-dark); line-height:1.7;
+  margin-bottom:12px;
+}
+.quote-card cite { font-size:0.8rem; color:var(--text-light); font-style:normal; }
+
+/* ─── RESPONSIVE ──────────────────────────────── */
+@media(max-width:640px){
+  .profile-grid { grid-template-columns:1fr; }
+  .landing-card { padding: 36px 24px; }
+  .why-grid, .resources-grid { grid-template-columns:1fr; }
+  .pro-charts { grid-template-columns:1fr; }
+  .guidance-grid { grid-template-columns:1fr; }
+  .app-header { padding:0 16px; }
+  .pro-container { padding: 20px 16px; }
+}
+
+/* ─── CHAT BUTTON IN PERSONAL ─────────────────── */
+.chat-cta {
+  background: linear-gradient(135deg, rgba(61,122,138,0.10), rgba(107,143,113,0.08));
+  border: 1.5px solid rgba(61,122,138,0.25);
+  border-radius: 22px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.chat-cta:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: var(--teal); }
+.chat-cta-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--sage));
+  display: flex; align-items:center; justify-content:center;
+  font-size: 22px; color: white; flex-shrink:0;
+  box-shadow: 0 6px 18px rgba(61,122,138,0.35);
+}
+.chat-cta-text h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--text-dark); margin-bottom: 5px;
+}
+.chat-cta-text p { font-size:0.875rem; color:var(--text-mid); line-height:1.5; }
+.chat-cta-arrow { margin-left:auto; color:var(--teal); font-size:1.2rem; }
+
+/* ─── SCREEN 4: CHAT ───────────────────────────── */
+#s-chat {
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.chat-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 820px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px 20px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chat-disclaimer {
+  background: rgba(200,151,74,0.10);
+  border: 1px solid rgba(200,151,74,0.3);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 0.8rem;
+  color: var(--text-mid);
+  line-height: 1.5;
+  margin: 14px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.chat-disclaimer i { color: var(--gold); font-size:1rem; flex-shrink:0; }
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 6px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* Message bubbles */
+.msg {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  animation: msgIn 0.3s ease;
+}
+@keyframes msgIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+.msg.user { flex-direction: row-reverse; }
+
+.msg-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 14px; flex-shrink:0;
+}
+.msg.ai .msg-avatar { background: linear-gradient(135deg, var(--sage), var(--teal)); color:white; }
+.msg.user .msg-avatar { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color:white; }
+
+.msg-bubble {
+  max-width: 75%;
+  padding: 13px 17px;
+  border-radius: 18px;
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: var(--text-dark);
+}
+.msg.ai .msg-bubble {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 6px;
+  backdrop-filter: blur(12px);
+}
+.msg.user .msg-bubble {
+  background: linear-gradient(135deg, var(--teal), var(--sage));
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+.msg.user .msg-bubble a { color: #d4f0ff; }
+
+.msg-file-preview {
+  margin-top: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 220px;
+}
+.msg-file-preview img { width:100%; display:block; border-radius:10px; }
+.msg-file-label {
+  font-size: 0.78rem;
+  background: rgba(255,255,255,0.2);
+  padding: 5px 10px;
+  border-radius: 8px;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Typing indicator */
+.msg-typing .msg-bubble {
+  padding: 14px 18px;
+}
+.typing-dots span {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+  margin: 0 2px;
+  animation: typingDot 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:0.5;} 30%{transform:translateY(-5px);opacity:1;} }
+
+/* Crisis inline */
+.crisis-inline {
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--red-alert);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.crisis-inline a { color: var(--red-alert); font-weight:700; }
+
+/* ─── CHAT INPUT AREA ──────────────────────────── */
+.chat-input-area {
+  flex-shrink: 0;
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+
+.chat-file-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px 10px;
+  flex-wrap: wrap;
+}
+.chat-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(61,122,138,0.1);
+  border: 1px solid rgba(61,122,138,0.2);
+  border-radius: 20px;
+  padding: 4px 10px 4px 6px;
+  font-size: 0.8rem;
+  color: var(--teal);
+}
+.chat-file-chip img { width:28px; height:28px; border-radius:6px; object-fit:cover; }
+.chat-file-chip .chip-remove {
+  cursor:pointer; color:var(--text-light); margin-left:2px; font-size:0.75rem;
+  transition:color 0.2s;
+}
+.chat-file-chip .chip-remove:hover { color:var(--red-alert); }
+
+.chat-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+#chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  line-height: 1.5;
+  max-height: 120px;
+  min-height: 22px;
+  overflow-y: auto;
+  padding: 2px 4px;
+}
+#chat-input::placeholder { color: var(--text-light); }
+
+.chat-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 16px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.chat-btn-attach {
+  background: var(--warm-white);
+  border: 1.5px solid var(--border);
+  color: var(--text-mid);
+}
+.chat-btn-attach:hover { border-color: var(--teal); color: var(--teal); }
+.chat-btn-send {
+  background: linear-gradient(135deg, var(--teal), var(--sage));
+  color: white;
+  box-shadow: 0 4px 14px rgba(61,122,138,0.4);
+}
+.chat-btn-send:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(61,122,138,0.5); }
+.chat-btn-send:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+#chat-file-input { display:none; }
+
+@media(max-width:640px){
+  .chat-wrapper { padding: 0 12px 16px; }
+  .msg-bubble { max-width: 88%; }
+  .chat-cta { flex-direction:column; text-align:center; }
+  .chat-cta-arrow { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-layer"></div>
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA 1: BIENVENIDA / REGISTRO
+═══════════════════════════════════════════════ -->
+<div class="screen active" id="s-landing">
+  <div class="landing-card">
+    <div class="logo-mark"><i class="fas fa-heart"></i></div>
+
+    <h1 class="landing-title">Espacio de <span>Apoyo</span></h1>
+    <p class="landing-subtitle">
+      Un lugar para hablar, escuchar y encontrar el primer paso hacia el bienestar.
+      Aquí no estás sol@ — hay personas capacitadas esperando ayudarte.
+    </p>
+
+    <hr class="divider">
+
+    <p class="choose-label">¿Cómo me identifico hoy?</p>
+
+    <div class="profile-grid">
+      <div class="profile-card joven" onclick="enterApp('joven')">
+        <div class="profile-icon"><i class="fas fa-seedling"></i></div>
+        <div class="profile-name">Joven</div>
+        <div class="profile-desc">Adolescente o adulto joven buscando apoyo emocional</div>
+      </div>
+      <div class="profile-card adulto" onclick="enterApp('adulto')">
+        <div class="profile-icon"><i class="fas fa-person"></i></div>
+        <div class="profile-name">Adulto</div>
+        <div class="profile-desc">Persona adulta que atraviesa una etapa difícil</div>
+      </div>
+      <div class="profile-card salud" onclick="enterApp('salud')">
+        <div class="profile-icon"><i class="fas fa-stethoscope"></i></div>
+        <div class="profile-name">Profesional de la Salud</div>
+        <div class="profile-desc">Psicólogo, psiquiatra, médico o trabajador social</div>
+      </div>
+      <div class="profile-card maestro" onclick="enterApp('maestro')">
+        <div class="profile-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+        <div class="profile-name">Maestro / Educador</div>
+        <div class="profile-desc">Docente que desea identificar señales de alerta en su grupo</div>
+      </div>
+    </div>
+
+    <div class="notice-box">
+      <i class="fas fa-shield-heart"></i>
+      <strong>Este espacio es solo de orientación.</strong> No reemplaza la atención médica profesional.
+      Si estás en crisis ahora mismo, llama al <strong>800 290-0024</strong> (CONASAMA, gratuito, 24 hrs).
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA 2: PERSONAL (JOVEN / ADULTO)
+═══════════════════════════════════════════════ -->
+<div class="screen" id="s-personal">
+
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-dot"><i class="fas fa-heart"></i></div>
+      Espacio de Apoyo
+    </div>
+    <span class="header-badge" id="personal-badge">Joven</span>
+    <button class="btn-back" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
+  </header>
+
+  <div class="personal-hero">
+    <h2 id="personal-greeting">Hola — estamos aquí contigo</h2>
+    <p>Lo que sientes es válido. Este espacio te ayudará a reconocer lo que estás viviendo y a dar el paso de hablar con alguien de confianza.</p>
+  </div>
+
+  <div class="personal-content">
+
+    <!-- CHAT CTA -->
+    <div class="chat-cta" onclick="openChat()">
+      <div class="chat-cta-icon"><i class="fas fa-comments"></i></div>
+      <div class="chat-cta-text">
+        <h4>Hablar con el asistente de apoyo</h4>
+        <p>Escríbele lo que sientes. Puedes compartir texto, imágenes o archivos. Responde con empatía, sin juzgarte.</p>
+      </div>
+      <div class="chat-cta-arrow"><i class="fas fa-chevron-right"></i></div>
+    </div>
+
+    <!-- CRISIS BANNER -->
+    <div class="crisis-banner">
+      <i class="fas fa-phone-volume"></i>
+      <div>
+        <strong>Si estás en crisis ahora mismo</strong>
+        <span>Hay personas esperando escucharte, disponibles las 24 horas</span>
+      </div>
+      <div class="crisis-phone"><i class="fas fa-phone"></i> 800 290-0024</div>
+    </div>
+
+    <!-- PASO 1: CHECK-IN -->
+    <div class="step-card">
+      <div class="step-title">
+        <div class="step-num">1</div>
+        ¿Cómo te sientes hoy?
+      </div>
+      <p class="step-sub">Elige todo lo que aplique. No hay respuestas incorrectas.</p>
+
+      <div class="feelings-grid" id="feelings-grid">
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😔 Triste')">
+          <span class="feel-icon">😔</span><span class="feel-label">Triste</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😟 Ansioso/a')">
+          <span class="feel-icon">😟</span><span class="feel-label">Ansioso/a</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😶 Vacío/a')">
+          <span class="feel-icon">😶</span><span class="feel-label">Vacío/a</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😤 Enojado/a')">
+          <span class="feel-icon">😤</span><span class="feel-label">Enojado/a</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😔 Solo/a')">
+          <span class="feel-icon">🤍</span><span class="feel-label">Solo/a</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😩 Agotado/a')">
+          <span class="feel-icon">😩</span><span class="feel-label">Agotado/a</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'😕 Confundido/a')">
+          <span class="feel-icon">😕</span><span class="feel-label">Confundido/a</span>
+        </button>
+        <button class="feeling-btn" onclick="toggleFeeling(this,'🙂 Esperanzado/a')">
+          <span class="feel-icon">🙂</span><span class="feel-label">Con esperanza</span>
+        </button>
+      </div>
+
+      <textarea class="textarea-field" id="open-text" placeholder="Si quieres, puedes escribir algo más sobre cómo te sientes o qué está pasando…"></textarea>
+      <button class="send-btn" onclick="generateResponse()">
+        <i class="fas fa-paper-plane"></i> Recibir orientación
+      </button>
+
+      <div class="response-box" id="response-box"></div>
+    </div>
+
+    <!-- PASO 2: ¿POR QUÉ UN PSICÓLOGO? -->
+    <div class="step-card">
+      <div class="step-title">
+        <div class="step-num">2</div>
+        ¿Por qué hablar con un psicólogo o psiquiatra?
+      </div>
+      <p class="step-sub">Muchas personas esperan "hasta estar muy mal" — pero no tienes que esperar ese momento.</p>
+
+      <div class="why-grid">
+        <div class="why-item color-sage">
+          <i class="fas fa-comments"></i>
+          <strong>Un espacio solo para ti</strong>
+          <p>Te escuchan sin juzgarte, con total confidencialidad.</p>
+        </div>
+        <div class="why-item color-teal">
+          <i class="fas fa-brain"></i>
+          <strong>Herramientas reales</strong>
+          <p>Aprenderás a manejar lo que sientes con técnicas probadas.</p>
+        </div>
+        <div class="why-item color-gold">
+          <i class="fas fa-seedling"></i>
+          <strong>Cambios que duran</strong>
+          <p>No solo te sentirás mejor — entenderás por qué te sientes así.</p>
+        </div>
+        <div class="why-item color-purple">
+          <i class="fas fa-shield-heart"></i>
+          <strong>Prevención, no debilidad</strong>
+          <p>Pedir ayuda es el acto más valiente y más inteligente.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3: TESTIMONIOS -->
+    <div class="step-card">
+      <div class="step-title">
+        <div class="step-num">3</div>
+        Otros que dieron el paso
+      </div>
+      <p class="step-sub">No estás sol@. Muchas personas sintieron lo mismo y encontraron salida.</p>
+
+      <div class="quote-card">
+        <blockquote>"Pensé que ir al psicólogo era para gente 'loca'. Hoy entiendo que era la mejor decisión que pude tomar. Después de tres meses ya tengo herramientas para manejar mi ansiedad."</blockquote>
+        <cite>— Daniela, 22 años, Guanajuato</cite>
+      </div>
+      <div class="quote-card">
+        <blockquote>"Me daba pena hablar de lo que sentía. El psiquiatra me dijo que lo que vivía tenía nombre y tratamiento. Eso me cambió la vida."</blockquote>
+        <cite>— Rodrigo, 35 años</cite>
+      </div>
+      <div class="quote-card">
+        <blockquote>"Me costó mucho hacer esa primera llamada. Pero fue el momento más importante de mi vida. No lo dejes para después."</blockquote>
+        <cite>— Marcela, 28 años</cite>
+      </div>
+    </div>
+
+    <!-- PASO 4: RECURSOS -->
+    <div class="step-card">
+      <div class="step-title">
+        <div class="step-num">4</div>
+        Líneas de apoyo y recursos
+      </div>
+      <p class="step-sub">Todas son gratuitas, confidenciales y disponibles ahora mismo.</p>
+
+      <div class="resources-grid">
+        <div class="resource-card">
+          <div class="rc-type">Crisis inmediata — 24 hrs</div>
+          <div class="rc-name">Línea de la Vida (CONASAMA)</div>
+          <div class="rc-phone"><i class="fas fa-phone"></i> 800 290-0024</div>
+          <div class="rc-desc">Orientación en crisis emocional y suicidio. Gratuita.</div>
+        </div>
+        <div class="resource-card">
+          <div class="rc-type">Apoyo emocional — 24 hrs</div>
+          <div class="rc-name">SAPTEL</div>
+          <div class="rc-phone"><i class="fas fa-phone"></i> 55 5259-8121</div>
+          <div class="rc-desc">Sistema de atención por teléfono. Confidencial, sin costo.</div>
+        </div>
+        <div class="resource-card">
+          <div class="rc-type">IMSS — Salud mental</div>
+          <div class="rc-name">Centro de Salud Mental IMSS</div>
+          <div class="rc-phone"><i class="fas fa-phone"></i> 800 623-2323</div>
+          <div class="rc-desc">Atención psicológica y psiquiátrica. Acude con tu cartilla.</div>
+        </div>
+        <div class="resource-card">
+          <div class="rc-type">Guanajuato</div>
+          <div class="rc-name">SSG — Salud Mental Guanajuato</div>
+          <div class="rc-phone"><i class="fas fa-phone"></i> 800 002-2700</div>
+          <div class="rc-desc">Servicios de Salud de Guanajuato. Centros comunitarios.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA FINAL -->
+    <div class="courage-section">
+      <h3>Dar el primer paso es lo más difícil</h3>
+      <p>
+        No necesitas "estar en el fondo" para pedir ayuda. Si algo te pesa, hablar con alguien capacitado puede cambiar todo.
+        Mereces estar bien.
+      </p>
+      <a href="tel:8002900024" class="btn-primary">
+        <i class="fas fa-phone-flip"></i> Llamar ahora: 800 290-0024
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA 3: PROFESIONAL (SALUD / MAESTRO)  (con OCR mejorado)
+═══════════════════════════════════════════════ -->
+<div class="screen" id="s-professional">
+
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-dot"><i class="fas fa-shield-halved"></i></div>
+      Monitor de Riesgo — V7 (OCR)
+    </div>
+    <span class="header-badge" id="pro-badge">Profesional</span>
+    <button class="btn-back" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
+  </header>
+
+  <div class="pro-container">
+
+    <div class="pro-title-section">
+      <h1><i class="fas fa-chart-network"></i> Detector de Riesgo Suicida</h1>
+      <p>Herramienta de análisis de texto para <span id="pro-role-desc">profesionales de la salud</span> · Distingue riesgo real de contexto médico</p>
+    </div>
+
+    <!-- UPLOAD (acepta imágenes) -->
+    <div class="pro-sidebar">
+      <h3><i class="fas fa-file-arrow-up"></i> Carga de archivos (incluye imágenes)</h3>
+      <div class="file-uploader" onclick="document.getElementById('proFileInput').click()">
+        <input type="file" id="proFileInput" accept=".csv,.xlsx,.txt,image/*" multiple>
+        <i class="fas fa-cloud-arrow-up"></i>
+        <p>Arrastra o selecciona tu archivo (CSV, Excel, TXT o imágenes)</p>
+        <small>Las imágenes se procesarán con OCR automáticamente</small>
+      </div>
+      <!-- Indicador de progreso OCR -->
+      <div id="ocrProgress" class="ocr-progress" style="display:none;">
+        <i class="fas fa-spinner fa-pulse"></i>
+        <span id="ocrStatus">Procesando imágenes...</span>
+      </div>
+
+      <div id="proColumnSelectorContainer" style="display:none;">
+        <label style="font-size:0.85rem; color:#a0a0a0; display:block; margin-bottom:6px;">Columna de texto a analizar:</label>
+        <select id="proColumnSelect" class="pro-select"></select>
+        <button class="pro-btn" onclick="analyzeFile()" id="analyzeBtn">
+          <i class="fas fa-play"></i> Iniciar análisis
+        </button>
+      </div>
+      <div class="pro-info-box">
+        <h4><i class="fas fa-circle-info"></i> Instrucciones</h4>
+        Sube un archivo con mensajes o respuestas escritas, o imágenes con texto. El sistema detecta indicadores de riesgo y los diferencia de contextos médicos.
+        <strong>No es diagnóstico clínico.</strong>
+      </div>
+    </div>
+
+    <!-- GUIDANCE SECTION FOR EDUCATORS -->
+    <div class="guidance-section" id="educatorGuidance" style="display:none;">
+      <h3><i class="fas fa-graduation-cap"></i> Guía rápida para educadores</h3>
+      <div class="guidance-grid">
+        <div class="guidance-item">
+          <strong>Señales de alerta verbal</strong>
+          <p>Frases como "ya no quiero estar aquí", "todos estarían mejor sin mí" o "no hay salida" requieren atención inmediata.</p>
+        </div>
+        <div class="guidance-item">
+          <strong>Cómo abordar al alumno</strong>
+          <p>Habla en privado, con calma. Pregunta directamente: "¿Estás pensando en hacerte daño?" No minimices lo que siente.</p>
+        </div>
+        <div class="guidance-item">
+          <strong>A quién reportar</strong>
+          <p>Contacta al área de orientación o trabajo social de tu institución. No dejes al alumno solo y no prometas confidencialidad.</p>
+        </div>
+        <div class="guidance-item">
+          <strong>Recursos de derivación</strong>
+          <p>CONASAMA: 800 290-0024 · SAPTEL: 55 5259-8121 · Centros de Salud IMSS o SSG en Guanajuato</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="proResultsContainer" style="display:none;">
+
+      <div id="proMetricsContainer" class="pro-metrics"></div>
+
+      <div class="pro-charts">
+        <div class="pro-chart-card">
+          <h3><i class="fas fa-cloud"></i> Palabras de riesgo detectadas</h3>
+          <div class="wordcloud-wrapper"><canvas id="wordcloud-canvas"></canvas></div>
+        </div>
+        <div class="pro-chart-card">
+          <h3><i class="fas fa-chart-bar"></i> Palabras más frecuentes</h3>
+          <canvas id="freqWordsChart"></canvas>
+        </div>
+      </div>
+
+      <div class="pro-chart-card" style="margin-bottom:24px;">
+        <h3><i class="fas fa-chart-column"></i> Distribución por nivel de riesgo</h3>
+        <canvas id="distributionChart" style="max-height:280px;"></canvas>
+      </div>
+
+      <h3 style="color:#00d4ff; margin-bottom:14px; display:flex; align-items:center; gap:8px;"><i class="fas fa-table"></i> Registro detallado</h3>
+      <div class="pro-info-box" style="margin-bottom:14px;">
+        <i class="fas fa-circle-info"></i> Mostrando casos con Score &gt; 0 y "Revisión: Ambigüedad Médica"
+      </div>
+      <div class="pro-table-wrap" id="proTableContainer"></div>
+
+    </div>
+
+    <div id="proLoadingSpinner" class="spinner" style="display:none;"></div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA 4: CHAT CON IA (GROQ)
+═══════════════════════════════════════════════ -->
+<div class="screen" id="s-chat">
+
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-dot"><i class="fas fa-comments"></i></div>
+      Asistente de Apoyo
+    </div>
+    <span class="header-badge" id="chat-badge">Contigo Siempre</span>
+    <button class="btn-back" onclick="goBackFromChat()"><i class="fas fa-arrow-left"></i> Volver</button>
+  </header>
+
+  <div class="chat-wrapper">
+
+    <div class="chat-disclaimer">
+      <i class="fas fa-shield-heart"></i>
+      <span>Este asistente es un <strong>complemento de orientación</strong>, no reemplaza atención profesional.
+      Si estás en crisis, llama al <strong><a href="tel:8002900024" style="color:var(--gold);font-weight:700;">800 290-0024</a></strong> (CONASAMA, 24 hrs, gratuito).</span>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <!-- messages rendered here -->
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-file-preview-bar" id="chat-file-preview-bar" style="display:none;"></div>
+      <div class="chat-input-row">
+        <button class="chat-btn chat-btn-attach" onclick="document.getElementById('chat-file-input').click()" title="Adjuntar imagen o archivo">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <input type="file" id="chat-file-input" accept="image/*,.pdf,.txt,.csv" multiple>
+        <textarea id="chat-input" rows="1" placeholder="Escríbeme cómo te sientes…" onkeydown="chatKeyHandler(event)" oninput="autoResize(this)"></textarea>
+        <button class="chat-btn chat-btn-send" id="chat-send-btn" onclick="sendMessage()" title="Enviar">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT (con soporte OCR para imágenes en sección profesional)
+═══════════════════════════════════════════════ -->
+<script>
+// ── STATE ──
+let currentProfile = null;
+let selectedFeelings = [];
+let fileData = null;
+let fileName = '';
+let results = [];
+
+// ── NAVIGATION ──
+function enterApp(profile) {
+  currentProfile = profile;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+  if (profile === 'joven' || profile === 'adulto') {
+    document.getElementById('s-personal').classList.add('active');
+    const badge = document.getElementById('personal-badge');
+    const greeting = document.getElementById('personal-greeting');
+    if (profile === 'joven') {
+      badge.textContent = 'Joven';
+      greeting.textContent = 'Hola — este es tu espacio seguro';
+    } else {
+      badge.textContent = 'Adulto';
+      greeting.textContent = 'Hola — estamos aquí contigo';
+    }
+    window.scrollTo(0, 0);
+  } else {
+    document.getElementById('s-professional').classList.add('active');
+    const badge = document.getElementById('pro-badge');
+    const roleDesc = document.getElementById('pro-role-desc');
+    const eduGuide = document.getElementById('educatorGuidance');
+    if (profile === 'salud') {
+      badge.textContent = 'Profesional de Salud';
+      roleDesc.textContent = 'profesionales de la salud';
+      eduGuide.style.display = 'none';
+    } else {
+      badge.textContent = 'Maestro / Educador';
+      roleDesc.textContent = 'educadores y docentes';
+      eduGuide.style.display = 'block';
+    }
+    window.scrollTo(0, 0);
+  }
+}
+
+function goBack() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-landing').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── FEELINGS ──
+function toggleFeeling(btn, label) {
+  btn.classList.toggle('selected');
+  const idx = selectedFeelings.indexOf(label);
+  if (idx === -1) selectedFeelings.push(label);
+  else selectedFeelings.splice(idx, 1);
+}
+
+// ── RESPONSE GENERATOR ──
+function generateResponse() {
+  const box = document.getElementById('response-box');
+  const openText = document.getElementById('open-text').value.trim();
+
+  const negativeSet = new Set(['😔 Triste','😟 Ansioso/a','😶 Vacío/a','😤 Enojado/a','😔 Solo/a','😩 Agotado/a','😕 Confundido/a']);
+  const negCount = selectedFeelings.filter(f => negativeSet.has(f)).length;
+  const hasHope = selectedFeelings.includes('🙂 Esperanzado/a');
+
+  let html = '';
+
+  if (selectedFeelings.length === 0 && openText.length === 0) {
+    html = `<p>Puedes seleccionar cómo te sientes o escribir algo — estamos aquí para escucharte.</p>`;
+    box.innerHTML = html;
+    box.classList.add('visible');
+    return;
+  }
+
+  // Affirm what they shared
+  if (selectedFeelings.length > 0) {
+    const feelingNames = selectedFeelings.map(f => f.split(' ').slice(1).join(' ')).join(', ');
+    html += `<p><strong>Gracias por compartir que te sientes ${feelingNames}.</strong> Reconocer lo que sientes es el primer paso más importante.</p>`;
+  }
+
+  // Check for heavy text
+  const riskWords = ['suicid', 'matar', 'morir', 'quitar', 'vida', 'daño', 'no quiero'];
+  const hasRiskText = riskWords.some(w => openText.toLowerCase().includes(w));
+
+  if (hasRiskText) {
+    html += `<p style="color:#c0392b; font-weight:600;">⚠️ Parece que estás pasando por algo muy difícil en este momento. Por favor llama ahora al <strong>800 290-0024</strong> — hay una persona real esperando escucharte, sin juzgarte, gratis.</p>`;
+  } else if (negCount >= 4) {
+    html += `<p>Cuando sentimos tantas cosas a la vez, puede ser abrumador. Lo que describes merece atención real, no solo tiempo para que pase.</p>
+    <p><strong>Hablar con un psicólogo</strong> no es para cuando ya no puedes más — es para que ese momento nunca llegue. Una primera cita puede ser el punto de quiebre hacia sentirte mejor.</p>`;
+  } else if (negCount >= 2) {
+    html += `<p>Lo que sientes tiene validez total. Muchas personas atraviesan periodos así — y la gran diferencia la hace tener con quién hablar.</p>
+    <p>Un psicólogo puede ayudarte a entender de dónde viene lo que sientes y cómo manejarlo. No tienes que resolverlo sol@.</p>`;
+  } else if (hasHope) {
+    html += `<p>¡Qué bueno que hay algo de esperanza en ti! Eso es importante. Si hay cosas que todavía te pesan, un espacio terapéutico puede ayudarte a procesar y crecer.</p>`;
+  } else {
+    html += `<p>Cuidar tu salud mental es igual de importante que cuidar tu cuerpo. Si hay algo que te inquieta, hablar con alguien de confianza — o con un profesional — siempre suma.</p>`;
+  }
+
+  html += `<p style="margin-top:14px; padding-top:14px; border-top: 1px solid rgba(107,143,113,0.2);">
+    <i class="fas fa-phone" style="color:var(--teal);"></i> &nbsp;
+    <strong>Línea de la Vida:</strong> <a href="tel:8002900024" style="color:var(--teal); font-weight:700;">800 290-0024</a> (gratuita, 24 hrs) &nbsp;·&nbsp;
+    <strong>SAPTEL:</strong> <a href="tel:5552598121" style="color:var(--teal); font-weight:700;">55 5259-8121</a>
+  </p>`;
+
+  box.innerHTML = html;
+  box.classList.add('visible');
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ══════════════════════════════════════════════
+// DETECTOR ENGINE (original logic preserved)
+// ══════════════════════════════════════════════
+class DetectorMotor {
+  constructor() {
+    this.keywords = {
+      "quisiera matarme":10,"quiero matarme":10,"voy a matarme":10,
+      "ojala matarme":10,"ojalá matarme":10,"valor para matarme":10,
+      "me quiero matar":10,"me voy a matar":10,"me quitare la vida":10,
+      "me quitaré la vida":10,"me quiero quitar la vida":10,
+      "me suicidare":10,"me suicidaré":10,"quiero suicidarme":10,
+      "voy a suicidarme":10,"me quiero suicidar":10,"me voy a suicidar":10,
+      "me matare":10,"me mataré":10,"fuerzas para matarme":10,
+      "pensando seriamente en el suicidio":10,"pensado mucho en el suicidio":10,
+      "pensando mucho en el suicidio":10,"pensamientos claros de suicidio":10,
+      "quiero morir":7,"quisiera morir":7,"voy a morir":7,
+      "ojala morir":9,"ojalá morir":9,"valor para morir":9,
+      "sin ganas de vivir":8,"no quiero vivir":8,"no quiero seguir viviendo":8,
+      "no quiero continuar viviendo":8,"terminar con mi vida":8,
+      "acabar con mi vida":8,"quitarme la vida":8,"quitarse la vida":8,
+      "considero la idea de morir":8,"considero mas la idea de morir":8,
+      "considero más la idea de morir":8,"pienso en el suicidio":9,
+      "he pensado en el suicidio":9,"estoy pensando en el suicidio":9,
+      "estar muerto sería mejor":8,"estar muerto seria mejor":8,
+      "la idea de no vivir más se siente como un alivio":8,
+      "la idea de no vivir mas se siente como un alivio":8,
+      "abuso":7,"abusar":7,"abusado":7,"abusada":7,
+      "acoso":7,"acosar":7,"acosado":7,"acosada":7,
+      "violacion":7,"violación":7,"violar":7,"violado":7,"violada":7,
+      "pegarme un tiro":6,"siento que soy una carga":6,
+      "no tengo ganas ni de existir":6,"no quiero ya existir":6,
+      "he perdido interes en casi todo":5,"he perdido interés en casi todo":5,
+      "pensar en dejar de existir me calma":5,"pienso en terminar con todo":5,
+      "no espero nada bueno del mañana":5,"no espero nada bueno del futuro":5,
+      "siento que estorbo":4,"solo estorbo":4,"sólo estorbo":4,"no quiero existir":4,
+      "no seguir viviendo":4,"no continuar viviendo":4,"hacerme dano":4,"me hago dano":4,
+      "ojalá no despertara":4,"no sirvo de mucho":4,"me siento vacío":4,"me siento vacio":4,
+      "me quisiera colgar":4,"me quiero colgar":4,"quisiera colgarme":4,"quiero terminar con todo":4,
+      "voy a colgarme":4,"me quisiera ahorcar":4,"me quiero ahorcar":4,"suicidarme":4,
+      "quisiera ahorcarme":4,"voy a ahorcarme":4,
+      "suicidio":3,"suicidar":3,"ya no quiero estar aqui":3,"matarme":3,"colgarme":3,"ahorcarme":3,
+      "nadie me extranaria":3,"ya no aguanto":3,"nada me emociona":3,
+      "cansado de vivir":3,"llorar":3,"menos ganas":3,"fallecio":3,"murio":3,"murió":3,
+      "muerte":3,"muerto":3,"fallecer":3,"fallecido":3,"falleció":3,
+      "maten":2,"ahorcar":2,"cortarme":2,"me siento sola":2,"me siento solo":2,"sin esperanza":2,
+      "depresion":2,"depresión":2,"no hay salida":2,"dormir para no despertar":2,"dormir y no despertar":2,
+      "para que continuar":2,"me siento mal":2,"nada mejora":2,"para que sigo":2,"para que vivir":2,
+      "para que seguir":2,"sin ganas de hacer nada":2,
+      "sin ganas de hacer nada más":2,"sin ganas de hacer nada mas":2,"no tengo ganas de hacer nada":2,
+      "colgar":1,"agotado":1,"agotada":1,"pastillas":1,"pastilla":1,"sin fuerzas":1,"incomodo":1,
+      "dormir para siempre":1,"morir":1,"tristeza":1,"triste":1,"solo":1,"estres":1,"estrés":1,
+      "ansiedad":1,"matar":1,"cansado":1,"cansada":1,"estoy atrapado":1,"estoy atrapada":1,
+      "cargado":-1,"aburri":-1,"aburrí":-1,"aburrido":-1,"descansado":-1,"ir a mi casa":-1,"trabaje":-1,
+      "ir a casa":-1,"mate":-1,"lei":-1,"leí":-1,"reprobe":-1,"reprobé":-1,"poco":-1,"carga":-1,
+      "prueba":-1,"pelicula":-1,"película":-1,"weba":-1,"gueva":-1,"caminando":-1,"equipo":-1,
+      "videojuego":-2,"juego":-2,"exposicion":-2,"clase":-2,"examen":-2,"es un juego":-2,
+      "que oso":-2,"que verguenza":-1,"broma":-2,"chiste":-2,"día de muertos":-2,
+      "paz":-2,"contento":-2,"feliz":-2,"alegre":-2,"emocionado":-2,"dia de muertos":-2,
+      "positivo":-2,"catrina":-3,"trabajos":-2,"divertido":-2,"divertida":-2,"matematicas":-2,
+      "alegria":-2,"alegría":-2,"tengo sueno":-2,"tengo mucho sueno":-2,"me da sueno":-2,
+      "me da mucho sueno":-2,"trabajando":-2,"telefono":-2,"celular":-2,"hice el oso":-2,
+      "ajaja":-3,"jajaja":-3,"JAJAJ":-3,"hahaha":-3,"HAHAHA":-3,"tarea":-3,"trabajo escolar":-3,
+    };
+    this.exclusionList = [
+      "morir de risa","morir de amor","morir de sueño","matar el tiempo","matar el aburrimiento",
+      "me quiero matar de la risa","en el videojuego","matar enemigos",
+    ];
+    this.medicalContext = [
+      "dolor de panza","me duele la panza","dolor de estomago",
+      "dolor de cabeza","me duele la cabeza","gripe","tos",
+      "infeccion","fiebre","receta","medico","doctor",
+      "me duele","inflamacion","vomito","mareo","cólico"
+    ];
+    this.ambiguousWords = ["pastillas","pastilla","dormir","medicamento","droga","quiero morir","me quiero morir","morir"];
+  }
+
+  normalizarTexto(texto) {
+    if (!texto || texto === null) return "";
+    let t = String(texto).toLowerCase();
+    t = t.replace(/¤/g,"ñ").replace(/¡/g,"i").replace(/¢/g,"o").replace(/£/g,"u");
+    t = t.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    return t;
+  }
+
+  analizarTexto(textoOriginal) {
+    if (!textoOriginal || String(textoOriginal).trim() === "") {
+      return { nivel:"Nulo", puntaje:0, matches:[] };
+    }
+    const textoLimpio = this.normalizarTexto(textoOriginal);
+
+    for (let frase of this.exclusionList) {
+      if (textoLimpio.includes(this.normalizarTexto(frase))) {
+        return { nivel:"Descartado - Frase Metafórica", puntaje:1, matches:[] };
+      }
+    }
+
+    let esContextoMedico = false;
+    for (let med of this.medicalContext) {
+      if (textoLimpio.includes(this.normalizarTexto(med))) { esContextoMedico=true; break; }
+    }
+    if (!esContextoMedico) {
+      if ((textoLimpio.includes("panza")||textoLimpio.includes("estomago")||textoLimpio.includes("cabeza"))
+        && (textoLimpio.includes("duele")||textoLimpio.includes("dolor"))) { esContextoMedico=true; }
+    }
+
+    let puntaje=0, matches=[], riesgoAnuladoPorMedico=false;
+    for (let [word,peso] of Object.entries(this.keywords)) {
+      if (textoLimpio.includes(word)) {
+        if (esContextoMedico && this.ambiguousWords.includes(word)) { riesgoAnuladoPorMedico=true; continue; }
+        puntaje += peso;
+        matches.push(word);
+      }
+    }
+
+    let nivel;
+    if (puntaje===0 && riesgoAnuladoPorMedico) nivel="Revisión: Ambigüedad Médica";
+    else if (puntaje<=0) nivel="Nulo - Sin riesgo detectado";
+    else if (puntaje<=3) nivel="Bajo - Precaución Leve";
+    else if (puntaje<=7) nivel="Medio - Vigilancia/Seguimiento";
+    else if (puntaje<=10) nivel="ALTO - Atención Requerida";
+    else nivel="EXTREMO - INTERVENCIÓN INMEDIATA";
+
+    return { nivel, puntaje, matches };
+  }
+}
+
+const detector = new DetectorMotor();
+
+// ── FILE HANDLING (con soporte para imágenes y OCR) ──
+document.getElementById('proFileInput').addEventListener('change', async function(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+
+  // Mostrar progreso OCR
+  const ocrProgress = document.getElementById('ocrProgress');
+  const ocrStatus = document.getElementById('ocrStatus');
+  ocrProgress.style.display = 'flex';
+  ocrStatus.textContent = 'Procesando archivos...';
+
+  // Separar imágenes del resto
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+  const otherFiles = files.filter(f => !f.type.startsWith('image/'));
+
+  let allData = [];
+
+  // 1. Procesar archivos no-imagen (igual que antes)
+  for (let file of otherFiles) {
+    await processNonImageFile(file, allData);
+  }
+
+  // 2. Procesar imágenes con OCR
+  if (imageFiles.length > 0) {
+    ocrStatus.textContent = `Procesando ${imageFiles.length} imagen(es) con OCR...`;
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i];
+      ocrStatus.textContent = `OCR: ${i+1}/${imageFiles.length} - ${file.name}`;
+      try {
+        const text = await performOCR(file);
+        // Agregar como una fila con nombre de archivo y texto extraído
+        allData.push({
+          ID: allData.length + 1,
+          Nombre: file.name,
+          Texto_extraido: text
+        });
+      } catch (err) {
+        console.error('Error OCR en', file.name, err);
+        allData.push({
+          ID: allData.length + 1,
+          Nombre: file.name,
+          Texto_extraido: '[Error al leer imagen]'
+        });
+      }
+    }
+  }
+
+  ocrProgress.style.display = 'none';
+
+  if (allData.length === 0) {
+    alert('No se pudo cargar ningún dato.');
+    return;
+  }
+
+  fileData = allData;
+  showColumnSelector(fileData);
+});
+
+// Función para procesar archivos CSV/Excel/TXT (similar al original, pero agregando a allData)
+function processNonImageFile(file, allData) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    const fileName = file.name;
+
+    if (fileName.endsWith('.csv') || fileName.endsWith('.txt')) {
+      reader.onload = ev => {
+        const text = ev.target.result;
+        if (fileName.endsWith('.csv')) {
+          const lines = text.split('\n').filter(l => l.trim());
+          if (lines.length) {
+            const headers = lines[0].split(',').map(h => h.trim());
+            for (let i = 1; i < lines.length; i++) {
+              const vals = lines[i].split(',').map(v => v.trim());
+              if (vals.length === headers.length) {
+                let row = {};
+                headers.forEach((h, j) => row[h] = vals[j]);
+                row.ID = allData.length + 1;
+                allData.push(row);
+              }
+            }
+          }
+        } else { // .txt
+          text.split('\n').filter(l => l.trim()).forEach((l, idx) => {
+            allData.push({ ID: allData.length + 1, Linea: l.trim() });
+          });
+        }
+        resolve();
+      };
+      reader.readAsText(file, 'utf-8');
+    } else if (fileName.endsWith('.xlsx')) {
+      reader.onload = ev => {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (rows.length) {
+          const headers = rows[0];
+          for (let i = 1; i < rows.length; i++) {
+            if (!rows[i].length) continue;
+            let row = {};
+            headers.forEach((h, j) => row[h] = rows[i][j] !== undefined ? rows[i][j] : '');
+            row.ID = allData.length + 1;
+            allData.push(row);
+          }
+        }
+        resolve();
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      resolve(); // no soportado
+    }
+  });
+}
+
+// Función para realizar OCR con Tesseract
+function performOCR(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageData = reader.result;
+      Tesseract.recognize(
+        imageData,
+        'spa', // idioma español
+        {
+          logger: m => console.log(m) // opcional: ver progreso en consola
+        }
+      ).then(({ data: { text } }) => {
+        resolve(text.trim());
+      }).catch(reject);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showColumnSelector(data) {
+  if (!data || !data.length) return;
+  const sel = document.getElementById('proColumnSelect');
+  sel.innerHTML = '';
+  Object.keys(data[0]).forEach(col => {
+    const opt = document.createElement('option'); opt.value = col; opt.textContent = col; sel.appendChild(opt);
+  });
+  document.getElementById('proColumnSelectorContainer').style.display = 'block';
+}
+
+function analyzeFile() {
+  if (!fileData) return;
+  const column = document.getElementById('proColumnSelect').value;
+  if (!column) return;
+
+  document.getElementById('proLoadingSpinner').style.display = 'block';
+  document.getElementById('proResultsContainer').style.display = 'none';
+
+  setTimeout(() => {
+    try {
+      results = [];
+      let allCriticalKeywords = [];
+
+      fileData.forEach((row, idx) => {
+        const text = row[column] || '';
+        const { nivel, puntaje, matches } = detector.analizarTexto(text);
+        if (String(text).trim()) {
+          results.push({ ID: idx+1, Texto: String(text).trim(), Nivel: nivel, Score: puntaje, Detalles: matches.join(', ') });
+          if (puntaje > 0) matches.forEach(w => { if (detector.keywords[w] >= 4) allCriticalKeywords.push(w.replace(/ /g,'_')); });
+        }
+      });
+
+      const dfRiesgo = results.filter(r => r.Score > 0);
+      const dfRevision = results.filter(r => r.Nivel === "Revisión: Ambigüedad Médica");
+
+      updateProMetrics(results.length, dfRiesgo.length, dfRevision.length);
+      allCriticalKeywords.length ? updateWordCloud(allCriticalKeywords) : showNoWordCloud();
+      updateFreqWords(column);
+      updateDistributionChart(results);
+      updateTable(results);
+
+      document.getElementById('proResultsContainer').style.display = 'block';
+    } catch (err) {
+      alert('Error al analizar: ' + err.message);
+    } finally {
+      document.getElementById('proLoadingSpinner').style.display = 'none';
+    }
+  }, 100);
+}
+
+function updateProMetrics(total, alertas, falsos) {
+  document.getElementById('proMetricsContainer').innerHTML = `
+    <div class="pro-metric-card">
+      <div class="pro-metric-label"><i class="fas fa-envelope"></i> Total mensajes</div>
+      <div class="pro-metric-value">${total}</div>
+    </div>
+    <div class="pro-metric-card">
+      <div class="pro-metric-label"><i class="fas fa-triangle-exclamation"></i> Alertas reales</div>
+      <div class="pro-metric-value">${alertas}</div>
+    </div>
+    <div class="pro-metric-card">
+      <div class="pro-metric-label"><i class="fas fa-hospital"></i> Ambigüedades médicas</div>
+      <div class="pro-metric-value">${falsos}</div>
+    </div>
+  `;
+}
+
+function updateFreqWords(column) {
+  let allText = fileData.map(r => r[column] || '').join(' ').toLowerCase();
+  allText = allText.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const stopwords = new Set(['de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'se', 'del', 'las', 'un', 'por', 'con', 'no', 'una', 'su', 'para', 'es', 'al', 'lo', 'como', 'mas', 'pero', 'sus', 'le', 'ya', 'o', 'fue', 'este', 'ha', 'si', 'porque', 'esta', 'son', 'entre', 'cuando', 'muy', 'sin', 'sobre', 'tambien', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde', 'todo', 'nos', 'durante', 'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos', 'e', 'esto', 'mi', 'antes', 'algunos', 'yo', 'otro', 'otras', 'otra', 'tanto', 'esa', 'estos', 'mucho', 'quienes', 'nada', 'muchos', 'cual', 'poco', 'ella', 'estar', 'estas', 'algunas', 'algo', 'nosotros', 'mis', 'tu', 'te', 'ti', 'tus', 'ellas']);
+  const wc = {};
+  allText.split(/\s+/).forEach(w => {
+    w = w.replace(/[^\w]/g, '');
+    if (w && w.length > 2 && !stopwords.has(w)) wc[w] = (wc[w] || 0) + 1;
+  });
+  const sorted = Object.entries(wc).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (!sorted.length) { document.getElementById('freqWordsChart').style.display = 'none'; return; }
+
+  const canvas = document.getElementById('freqWordsChart');
+  const parent = canvas.parentNode;
+  const nc = document.createElement('canvas'); nc.id = 'freqWordsChart'; parent.replaceChild(nc, canvas);
+  new Chart(nc.getContext('2d'), {
+    type: 'bar',
+    data: { labels: sorted.map(i => i[0]), datasets: [{ label: 'Frecuencia', data: sorted.map(i => i[1]), backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 1 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { x: { grid: { color: '#00d4ff22' }, ticks: { color: '#a0a0a0' } }, y: { grid: { display: false }, ticks: { color: '#a0a0a0' } } } }
+  });
+}
+
+function updateDistributionChart(results) {
+  const lc = {};
+  results.forEach(r => lc[r.Nivel] = (lc[r.Nivel] || 0) + 1);
+  const labels = Object.keys(lc), data = Object.values(lc);
+  const colors = labels.map(l => {
+    if (l.includes('EXTREMO')) return '#FF0000'; if (l.includes('ALTO')) return '#8B0000';
+    if (l.includes('Medio')) return '#aa6600'; if (l.includes('Bajo')) return '#1E3F20';
+    if (l.includes('Revisión')) return '#8A2BE2'; if (l.includes('Descartado')) return '#0047AB';
+    return '#808080';
+  });
+
+  const canvas = document.getElementById('distributionChart');
+  const parent = canvas.parentNode;
+  const nc = document.createElement('canvas'); nc.id = 'distributionChart'; nc.style.maxHeight = '280px'; parent.replaceChild(nc, canvas);
+  new Chart(nc.getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: 'white', borderWidth: 1 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: 'white', font: { weight: 'bold' } } }, scales: { y: { beginAtZero: true, grid: { color: '#00d4ff22' }, ticks: { color: '#a0a0a0' } }, x: { grid: { display: false }, ticks: { color: '#a0a0a0', maxRotation: 45 } } } },
+    plugins: [ChartDataLabels]
+  });
+}
+
+function updateTable(results) {
+  let filtered = results.filter(r => r.Score > 0 || r.Nivel === "Revisión: Ambigüedad Médica");
+  if (!filtered.length) filtered = results;
+  filtered.sort((a, b) => b.Score - a.Score);
+
+  let html = '<table><thead><tr><th>ID</th><th>Texto</th><th>Nivel</th><th>Score</th><th>Palabras clave</th></tr></thead><tbody>';
+  filtered.forEach(row => {
+    let rc = '';
+    if (row.Nivel.includes('EXTREMO')) rc = 'row-extremo';
+    else if (row.Nivel.includes('ALTO')) rc = 'row-alto';
+    else if (row.Nivel.includes('Medio')) rc = 'row-medio';
+    else if (row.Nivel.includes('Bajo')) rc = 'row-bajo';
+    else if (row.Nivel.includes('Revisión')) rc = 'row-revision';
+    else if (row.Nivel.includes('Descartado')) rc = 'row-descartado';
+    html += `<tr class="${rc}"><td>${row.ID}</td><td style="max-width:380px;white-space:normal;word-wrap:break-word;">${row.Texto}</td><td>${row.Nivel}</td><td>${row.Score}</td><td>${row.Detalles}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('proTableContainer').innerHTML = html;
+}
+
+function updateWordCloud(keywords) {
+  const canvas = document.getElementById('wordcloud-canvas');
+  if (!canvas) return;
+  const wc = {};
+  keywords.forEach(w => wc[w] = (wc[w] || 0) + 1);
+  const wordArray = Object.entries(wc).map(([w, c]) => [w, c]);
+  const container = canvas.parentElement;
+  canvas.width = container.clientWidth || 500; canvas.height = container.clientHeight || 320;
+  try {
+    WordCloud(canvas, { list: wordArray, gridSize: 16, weightFactor: w => Math.pow(w, 0.8) * 20, fontFamily: 'DM Sans, Arial', color: () => `hsl(${Math.floor(Math.random() * 20) + 340},100%,60%)`, rotateRatio: 0.3, rotationSteps: 2, backgroundColor: '#0f0f1e', minSize: 12, shape: 'circle', ellipticity: 0.7 });
+  } catch (e) { showNoWordCloud(); }
+}
+
+function showNoWordCloud() {
+  const canvas = document.getElementById('wordcloud-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = '18px DM Sans'; ctx.fillStyle = '#a0a0a0';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('✅ Sin palabras de alto riesgo', canvas.width / 2, canvas.height / 2);
+}
+
+// ══════════════════════════════════════════════
+// CHAT CON GROQ (sin cambios, pero se mantiene igual)
+// ══════════════════════════════════════════════
+const GROQ_KEY = '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';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.1-8b-instant';
+
+const SYSTEM_PROMPT = `Eres un asistente de apoyo emocional empático y cálido llamado "Aura", integrado en una plataforma de salud mental llamada "Espacio de Apoyo". Tu misión es escuchar con atención, validar emociones y orientar suavemente hacia buscar ayuda profesional cuando sea necesario.
+
+REGLAS IMPORTANTES:
+1. NUNCA proporciones diagnósticos clínicos ni prescribas medicamentos.
+2. Siempre recuerda al usuario que este espacio es un complemento, no reemplaza a un psicólogo o psiquiatra.
+3. Si el usuario menciona ideas suicidas, autolesiones o crisis grave, SIEMPRE incluye el número 800 290-0024 (CONASAMA, gratuito, 24h) y anímalo a llamar.
+4. Habla en español, de manera cálida, cercana y sin tecnicismos. Evita frases frías o robóticas.
+5. Valida primero, luego orienta. Nunca minimices el dolor del usuario.
+6. Sé breve pero significativo. Máximo 3-4 párrafos por respuesta.
+7. Usa preguntas abiertas para invitar al usuario a seguir expresándose.
+8. Menciona recursos concretos de México cuando sea pertinente: CONASAMA 800 290-0024, SAPTEL 55 5259-8121, IMSS 800 623-2323.
+9. Recuerda siempre que este espacio es de orientación y que el usuario merece atención profesional real.`;
+
+let chatHistory = [];
+let pendingFiles = [];
+
+const RISK_WORDS = ['suicid', 'matarme', 'quiero morir', 'ya no quiero', 'no quiero vivir', 'hacerme daño', 'ahorcarme', 'colgarme', 'no quiero seguir'];
+
+function openChat() {
+  currentProfile = currentProfile || 'joven';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-chat').classList.add('active');
+  document.getElementById('chat-badge').textContent = currentProfile === 'joven' ? 'Joven' : 'Adulto';
+  window.scrollTo(0, 0);
+  if (chatHistory.length === 0) initChat();
+}
+
+function goBackFromChat() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-personal').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function initChat() {
+  chatHistory = [];
+  const greeting = currentProfile === 'joven'
+    ? 'Hola 👋 Soy Aura, tu asistente de apoyo. Estoy aquí para escucharte sin juzgarte. ¿Cómo estás hoy? Puedes contarme lo que quieras, o compartir una imagen si lo prefieres.'
+    : 'Hola 👋 Soy Aura. Este es un espacio seguro para ti. ¿Cómo te has sentido últimamente? Cuéntame lo que traigas — aquí no hay respuestas incorrectas.';
+  appendMessage('ai', greeting);
+}
+
+function appendMessage(role, text, fileInfo) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  const avatarIcon = role === 'ai' ? 'fas fa-heart' : 'fas fa-user';
+  const hasRisk = RISK_WORDS.some(w => text.toLowerCase().includes(w));
+  const crisisHtml = (role === 'ai' && hasRisk)
+    ? '<div class="crisis-inline"><i class="fas fa-phone-volume"></i> Si sientes que estás en peligro, llama ahora: <a href="tel:8002900024">800 290-0024</a> (CONASAMA, gratis, 24h)</div>'
+    : '';
+
+  let fileHtml = '';
+  if (fileInfo) {
+    fileHtml = fileInfo.type === 'image'
+      ? '<div class="msg-file-preview"><img src="' + fileInfo.data + '" alt="imagen adjunta"></div>'
+      : '<div class="msg-file-label"><i class="fas fa-file-alt"></i> ' + fileInfo.name + '</div>';
+  }
+
+  const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  div.innerHTML = '<div class="msg-avatar"><i class="' + avatarIcon + '"></i></div>'
+    + '<div class="msg-bubble">' + fileHtml + formattedText + crisisHtml + '</div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function appendTyping() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai msg-typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="msg-avatar"><i class="fas fa-heart"></i></div>'
+    + '<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function chatKeyHandler(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+// Archivos adjuntos para chat
+document.getElementById('chat-file-input').addEventListener('change', function(e) {
+  Array.from(e.target.files).forEach(function(file) {
+    const reader = new FileReader();
+    if (file.type.startsWith('image/')) {
+      reader.onload = ev => { pendingFiles.push({ name: file.name, type: 'image', mimeType: file.type, data: ev.target.result }); renderFilePreviews(); };
+      reader.readAsDataURL(file);
+    } else {
+      reader.onload = ev => { pendingFiles.push({ name: file.name, type: 'text', data: ev.target.result }); renderFilePreviews(); };
+      reader.readAsText(file, 'utf-8');
+    }
+  });
+  this.value = '';
+});
+
+function renderFilePreviews() {
+  const bar = document.getElementById('chat-file-preview-bar');
+  bar.innerHTML = '';
+  if (!pendingFiles.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  pendingFiles.forEach(function(f, idx) {
+    const chip = document.createElement('div');
+    chip.className = 'chat-file-chip';
+    const name = f.name.length > 18 ? f.name.slice(0, 16) + '...' : f.name;
+    chip.innerHTML = (f.type === 'image' ? '<img src="' + f.data + '" alt="">' : '<i class="fas fa-file-alt"></i>')
+      + '<span>' + name + '</span>'
+      + '<span class="chip-remove" onclick="removeFile(' + idx + ')"><i class="fas fa-times"></i></span>';
+    bar.appendChild(chip);
+  });
+}
+
+function removeFile(idx) { pendingFiles.splice(idx, 1); renderFilePreviews(); }
+
+// Llamada a Groq
+async function callGroq(messages) {
+  try {
+    const response = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
+      body: JSON.stringify({ model: GROQ_MODEL, messages: messages, temperature: 0.85, max_tokens: 600 })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const msg = (data.error && data.error.message) ? data.error.message : JSON.stringify(data);
+      return { ok: false, error: 'HTTP ' + response.status + ': ' + msg };
+    }
+    const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    return text ? { ok: true, text: text } : { ok: false, error: 'Respuesta vacía: ' + JSON.stringify(data) };
+  } catch (e) {
+    return { ok: false, error: 'Error de red: ' + e.message };
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  const files = [...pendingFiles];
+
+  if (!text && !files.length) return;
+
+  const fileInfoDisplay = files.length
+    ? (files[0].type === 'image' ? { type: 'image', data: files[0].data, name: files[0].name } : { type: 'file', name: files[0].name })
+    : null;
+  appendMessage('user', text || '(archivo adjunto)', fileInfoDisplay);
+
+  input.value = '';
+  input.style.height = 'auto';
+  pendingFiles = [];
+  renderFilePreviews();
+  document.getElementById('chat-send-btn').disabled = true;
+
+  const groqMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
+
+  chatHistory.forEach(function(m) {
+    groqMessages.push({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text });
+  });
+
+  let userContent = text || '';
+  files.forEach(function(f) {
+    if (f.type === 'text') {
+      userContent += '\n[Archivo: ' + f.name + ']\n' + f.data.slice(0, 3000);
+    } else if (f.type === 'image') {
+      userContent += '\n[El usuario compartió una imagen: ' + f.name + '. Responde con empatía considerando que puede ser relevante para lo que siente.]';
+    }
+  });
+  groqMessages.push({ role: 'user', content: userContent });
+
+  chatHistory.push({ role: 'user', text: text || '[archivo adjunto]' });
+
+  appendTyping();
+
+  try {
+    const result = await callGroq(groqMessages);
+    removeTyping();
+
+    if (result.ok) {
+      appendMessage('ai', result.text);
+      chatHistory.push({ role: 'ai', text: result.text });
+      if (chatHistory.length > 30) chatHistory = chatHistory.slice(-30);
+    } else {
+      appendMessage('ai', '⚠️ Error de API: ' + result.error + '\n\nSi necesitas apoyo urgente: **800 290-0024** (CONASAMA, gratuito, 24h).');
+    }
+  } catch (err) {
+    removeTyping();
+    appendMessage('ai', '⚠️ Error inesperado: ' + err.message);
+    console.error('Chat error:', err);
+  }
+
+  document.getElementById('chat-send-btn').disabled = false;
+}
+</script>
+
+</body>
+</html>
