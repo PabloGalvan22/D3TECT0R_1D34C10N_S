@@ -612,6 +612,140 @@ td { padding:11px 15px; border-bottom:1px solid rgba(0,212,255,0.12); font-size:
 .export-btn-xlsx { border-color: rgba(0,200,100,0.4); color: #00c864; background: rgba(0,200,100,0.08); }
 .export-btn-xlsx:hover { background: rgba(0,200,100,0.18); box-shadow: 0 0 12px rgba(0,200,100,0.3); }
 
+/* ─── PRO TABS ───────────────────────────────── */
+.pro-tabs {
+  display: flex; gap: 0; margin-bottom: 28px;
+  border-bottom: 2px solid rgba(0,212,255,0.15);
+}
+.pro-tab {
+  padding: 10px 22px; cursor: pointer; font-size: 0.88rem; font-weight: 600;
+  color: #606070; background: none; border: none; border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; gap: 7px;
+}
+.pro-tab:hover { color: #00d4ff; }
+.pro-tab.active { color: #00d4ff; border-bottom-color: #00d4ff; }
+
+.pro-tab-panel { display: none; animation: fadeIn 0.35s ease; }
+.pro-tab-panel.active { display: block; }
+
+/* ─── CHECKLIST ───────────────────────────────── */
+.checklist-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(0,212,255,0.18);
+  border-radius: 14px; padding: 22px; margin-bottom: 16px;
+}
+.checklist-card h4 {
+  color: #00d4ff; font-size: 0.92rem; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.check-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.08);
+  cursor: pointer;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item input[type=checkbox] { margin-top: 3px; flex-shrink: 0; accent-color: #00d4ff; width: 16px; height: 16px; cursor: pointer; }
+.check-item label { font-size: 0.88rem; color: #c0c0d0; line-height: 1.5; cursor: pointer; }
+.check-item.checked label { color: #606070; text-decoration: line-through; }
+
+.score-bar {
+  background: rgba(0,212,255,0.07); border-radius: 12px; padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; gap: 10px;
+}
+.score-bar .score-val { font-size: 1.8rem; font-weight: 700; color: #00d4ff; }
+.score-bar .score-label { font-size: 0.82rem; color: #a0a0a0; }
+.score-badge {
+  padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;
+}
+.score-badge.bajo    { background: rgba(30,63,32,0.4);   color: #6fbf73; }
+.score-badge.medio   { background: rgba(170,102,0,0.3);  color: #f0a040; }
+.score-badge.alto    { background: rgba(192,57,43,0.3);  color: #ff6b5b; }
+.score-badge.extremo { background: rgba(180,0,0,0.4);    color: #ff3333; animation: micPulse 1.2s ease-in-out infinite; }
+
+/* ─── PROTOCOL STEPS ──────────────────────────── */
+.protocol-steps { display: flex; flex-direction: column; gap: 14px; }
+.protocol-step {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(0,212,255,0.15);
+  border-left: 4px solid #00d4ff;
+  border-radius: 0 12px 12px 0; padding: 16px 18px;
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.protocol-step.step-warn  { border-left-color: #f0a040; }
+.protocol-step.step-danger{ border-left-color: #ff4444; }
+.protocol-step .step-num-pro {
+  width: 30px; height: 30px; border-radius: 50%; background: rgba(0,212,255,0.15);
+  color: #00d4ff; font-size: 0.8rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.protocol-step.step-warn  .step-num-pro { background: rgba(240,160,64,0.15); color: #f0a040; }
+.protocol-step.step-danger .step-num-pro{ background: rgba(255,68,68,0.15);  color: #ff4444; }
+.protocol-step .step-body strong { display: block; color: #e0e0e0; font-size: 0.9rem; margin-bottom: 5px; }
+.protocol-step .step-body p { font-size: 0.83rem; color: #9090a0; line-height: 1.6; margin: 0; }
+
+/* ─── QUICK NOTES FORM ───────────────────────── */
+.pro-form-group { margin-bottom: 14px; }
+.pro-form-group label { font-size: 0.82rem; color: #a0a0a0; display: block; margin-bottom: 5px; }
+.pro-form-input, .pro-form-textarea, .pro-form-select {
+  width: 100%; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,212,255,0.25); border-radius: 8px;
+  padding: 10px 14px; color: #e0e0e0; font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+  transition: border-color 0.2s; box-sizing: border-box;
+}
+.pro-form-input:focus, .pro-form-textarea:focus { outline: none; border-color: #00d4ff; }
+.pro-form-textarea { min-height: 90px; resize: vertical; }
+.pro-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:640px){ .pro-form-row { grid-template-columns: 1fr; } }
+
+.pro-form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+.pro-btn-sm {
+  padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer;
+  font-size: 0.85rem; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+}
+.pro-btn-sm.outline { background: none; border: 1px solid rgba(0,212,255,0.35); color: #00d4ff; }
+.pro-btn-sm.outline:hover { background: rgba(0,212,255,0.08); }
+.pro-btn-sm.primary { background: linear-gradient(90deg,#00d4ff,#0099cc); color: white; }
+.pro-btn-sm.primary:hover { box-shadow: 0 4px 16px rgba(0,212,255,0.35); }
+
+/* ─── LOG TABLE ───────────────────────────────── */
+.log-entry {
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(0,212,255,0.12);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.log-entry .log-badge {
+  font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.log-entry .log-text strong { color: #e0e0e0; font-size: 0.88rem; }
+.log-entry .log-text p { color: #808090; font-size: 0.8rem; margin: 3px 0 0; }
+.log-entry .log-date { margin-left: auto; font-size: 0.75rem; color: #505060; white-space: nowrap; }
+
+/* ─── SCRIPT BOX ──────────────────────────────── */
+.script-box {
+  background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 14px;
+}
+.script-box .script-label {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #00d4ff; margin-bottom: 8px;
+}
+.script-box p { font-size: 0.87rem; color: #c0c0d0; line-height: 1.7; margin: 0; font-style: italic; }
+.script-box .script-note { font-size: 0.78rem; color: #606070; font-style: normal; margin-top: 8px; }
+
+/* ─── RESOURCE CHIPS ─────────────────────────── */
+.resource-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.resource-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.22);
+  border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; color: #a0d4e8;
+  text-decoration: none; transition: all 0.2s;
+}
+.resource-chip:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
+.resource-chip.gold { background: rgba(232,196,138,0.08); border-color: rgba(232,196,138,0.25); color: #e8c48a; }
+.resource-chip.gold:hover { background: rgba(232,196,138,0.15); }
+
 /* ─── GUIDANCE CARD (FOR PROS) ───────────────── */
 .guidance-section {
   background: rgba(255,255,255,0.03);
@@ -792,6 +926,77 @@ td { padding:11px 15px; border-bottom:1px solid rgba(0,212,255,0.12); font-size:
 }
 .char-counter.warn  { color: var(--gold); }
 .char-counter.limit { color: var(--red-alert); font-weight: 600; }
+
+/* ─── VOICE CHAT ─────────────────────────────── */
+.chat-btn-mic {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--warm-white);
+  color: var(--text-mid);
+  font-size: 15px; cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  transition: all 0.2s; flex-shrink:0;
+}
+.chat-btn-mic:hover { border-color: var(--teal); color: var(--teal); }
+.chat-btn-mic.recording {
+  background: rgba(192,57,43,0.12);
+  border-color: var(--red-alert);
+  color: var(--red-alert);
+  animation: micPulse 1s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.35); }
+  50%      { box-shadow: 0 0 0 10px rgba(192,57,43,0); }
+}
+
+.voice-bar {
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 6px 4px 0;
+  font-size: 0.75rem; color: var(--text-light);
+  gap: 10px;
+}
+.voice-bar label { display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
+.voice-bar input[type=checkbox] { accent-color: var(--teal); width:14px; height:14px; cursor:pointer; }
+
+.voice-status {
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 8px 14px;
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.2);
+  border-radius: 10px;
+  font-size: 0.82rem; color: var(--red-alert);
+  margin-bottom: 6px;
+  animation: fadeIn 0.3s ease;
+}
+.voice-status.active { display: flex; }
+.voice-status .voice-waves {
+  display: flex; align-items: center; gap: 2px;
+}
+.voice-waves span {
+  display: inline-block; width: 3px; border-radius: 2px;
+  background: var(--red-alert);
+  animation: wave 0.8s ease-in-out infinite;
+}
+.voice-waves span:nth-child(1){ height:8px;  animation-delay:0s;    }
+.voice-waves span:nth-child(2){ height:16px; animation-delay:0.1s;  }
+.voice-waves span:nth-child(3){ height:10px; animation-delay:0.2s;  }
+.voice-waves span:nth-child(4){ height:20px; animation-delay:0.3s;  }
+.voice-waves span:nth-child(5){ height:12px; animation-delay:0.4s;  }
+@keyframes wave {
+  0%,100% { transform: scaleY(0.5); opacity:0.6; }
+  50%      { transform: scaleY(1.2); opacity:1;   }
+}
+
+.tts-speaking-indicator {
+  display: none; align-items: center; gap:8px;
+  font-size: 0.78rem; color: var(--teal);
+}
+.tts-speaking-indicator.active { display: flex; }
+.tts-speaking-indicator i { animation: ttsIcon 1.2s ease-in-out infinite; }
+@keyframes ttsIcon { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
+
+body.dark-mode .chat-btn-mic { background: var(--warm-white); border-color: var(--border); }
 
 .msg-time {
   font-size: 0.7rem;
@@ -1164,124 +1369,257 @@ td { padding:11px 15px; border-bottom:1px solid rgba(0,212,255,0.12); font-size:
   <div class="pro-container">
 
     <div class="pro-title-section">
-      <h1><i class="fas fa-chart-network"></i> Detector de Riesgo Suicida</h1>
-      <p>Herramienta de análisis de texto para <span id="pro-role-desc">profesionales de la salud</span> · Distingue riesgo real de contexto médico</p>
+      <h1 id="pro-main-title"><i class="fas fa-chart-network"></i> Monitor de Riesgo Suicida</h1>
+      <p>Panel avanzado para <span id="pro-role-desc">profesionales de la salud</span> · Análisis de texto, evaluación clínica y protocolos de intervención</p>
     </div>
 
-    <!-- UPLOAD (acepta imágenes) -->
-    <div class="pro-sidebar">
-      <h3><i class="fas fa-file-arrow-up"></i> Carga de archivos (incluye imágenes)</h3>
-      <div class="file-uploader" onclick="document.getElementById('proFileInput').click()">
-        <input type="file" id="proFileInput" accept=".csv,.xlsx,.txt,image/*" multiple>
-        <i class="fas fa-cloud-arrow-up"></i>
-        <p>Arrastra o selecciona tu archivo (CSV, Excel, TXT o imágenes)</p>
-        <small>Las imágenes se procesarán con OCR automáticamente</small>
-      </div>
-      <!-- Indicador de progreso OCR -->
-      <div id="ocrProgress" class="ocr-progress" style="display:none;">
-        <i class="fas fa-spinner fa-pulse"></i>
-        <span id="ocrStatus">Procesando imágenes...</span>
-      </div>
-
-      <div id="proColumnSelectorContainer" style="display:none;">
-        <label style="font-size:0.85rem; color:#a0a0a0; display:block; margin-bottom:6px;">Columna de texto a analizar:</label>
-        <select id="proColumnSelect" class="pro-select"></select>
-        <button class="pro-btn" onclick="analyzeFile()" id="analyzeBtn">
-          <i class="fas fa-play"></i> Iniciar análisis
-        </button>
-      </div>
-      <div class="pro-info-box">
-        <h4><i class="fas fa-circle-info"></i> Instrucciones</h4>
-        Sube un archivo con mensajes o respuestas escritas, o imágenes con texto. El sistema detecta indicadores de riesgo y los diferencia de contextos médicos.
-        <strong>No es diagnóstico clínico.</strong>
-      </div>
+    <!-- TABS -->
+    <div class="pro-tabs" id="pro-tabs">
+      <button class="pro-tab active" onclick="switchProTab('analisys')" id="tab-analisys"><i class="fas fa-magnifying-glass-chart"></i> Análisis de texto</button>
+      <button class="pro-tab" onclick="switchProTab('eval')" id="tab-eval" style="display:none;"><i class="fas fa-clipboard-check"></i> Evaluación clínica</button>
+      <button class="pro-tab" onclick="switchProTab('protocol')" id="tab-protocol"><i class="fas fa-shield-halved"></i> Protocolo</button>
+      <button class="pro-tab" onclick="switchProTab('notes')" id="tab-notes" style="display:none;"><i class="fas fa-notes-medical"></i> Registro de casos</button>
+      <button class="pro-tab" onclick="switchProTab('classroom')" id="tab-classroom" style="display:none;"><i class="fas fa-users-viewfinder"></i> Observación grupal</button>
+      <button class="pro-tab" onclick="switchProTab('parent')" id="tab-parent" style="display:none;"><i class="fas fa-people-arrows"></i> Guía familiar</button>
+      <button class="pro-tab" onclick="switchProTab('resources')" id="tab-resources"><i class="fas fa-link"></i> Recursos</button>
     </div>
 
-    <!-- GUIDANCE SECTION FOR EDUCATORS -->
-    <div class="guidance-section" id="educatorGuidance" style="display:none;">
-      <h3><i class="fas fa-graduation-cap"></i> Guía rápida para educadores</h3>
-      <div class="guidance-grid">
-        <div class="guidance-item">
-          <strong>Señales de alerta verbal</strong>
-          <p>Frases como "ya no quiero estar aquí", "todos estarían mejor sin mí" o "no hay salida" requieren atención inmediata.</p>
+    <!-- TAB: ANÁLISIS -->
+    <div class="pro-tab-panel active" id="panel-analisys">
+      <div class="pro-sidebar">
+        <h3><i class="fas fa-file-arrow-up"></i> Carga de archivos (incluye imágenes)</h3>
+        <div class="file-uploader" onclick="document.getElementById('proFileInput').click()">
+          <input type="file" id="proFileInput" accept=".csv,.xlsx,.txt,image/*" multiple>
+          <i class="fas fa-cloud-arrow-up"></i>
+          <p>Arrastra o selecciona tu archivo (CSV, Excel, TXT o imágenes)</p>
+          <small>Las imágenes se procesarán con OCR automáticamente</small>
         </div>
-        <div class="guidance-item">
-          <strong>Cómo abordar al alumno</strong>
-          <p>Habla en privado, con calma. Pregunta directamente: "¿Estás pensando en hacerte daño?" No minimices lo que siente.</p>
+        <div id="ocrProgress" class="ocr-progress" style="display:none;"><i class="fas fa-spinner fa-pulse"></i><span id="ocrStatus">Procesando...</span></div>
+        <div id="proColumnSelectorContainer" style="display:none;">
+          <label style="font-size:0.85rem;color:#a0a0a0;display:block;margin-bottom:6px;">Columna de texto a analizar:</label>
+          <select id="proColumnSelect" class="pro-select"></select>
+          <button class="pro-btn" onclick="analyzeFile()" id="analyzeBtn"><i class="fas fa-play"></i> Iniciar análisis</button>
         </div>
-        <div class="guidance-item">
-          <strong>A quién reportar</strong>
-          <p>Contacta al área de orientación o trabajo social de tu institución. No dejes al alumno solo y no prometas confidencialidad.</p>
-        </div>
-        <div class="guidance-item">
-          <strong>Recursos de derivación</strong>
-          <p>CONASAMA: 800 290-0024 · SAPTEL: 55 5259-8121 · DIF: 800 222-2268 · Centros de Salud IMSS o SSG en Guanajuato</p>
-        </div>
+        <div class="pro-info-box"><h4><i class="fas fa-circle-info"></i> Instrucciones</h4>Sube un archivo con mensajes o respuestas escritas, o imágenes con texto. El sistema detecta indicadores de riesgo y los diferencia de contextos médicos. <strong>No es diagnóstico clínico.</strong></div>
       </div>
-    </div>
-
-    <!-- RESULTS -->
-    <div id="proResultsContainer" style="display:none;">
-
-      <div id="proMetricsContainer" class="pro-metrics"></div>
-
-      <div class="pro-charts">
-        <div class="pro-chart-card">
-          <h3><i class="fas fa-cloud"></i> Palabras de riesgo detectadas</h3>
-          <div class="wordcloud-wrapper"><canvas id="wordcloud-canvas"></canvas></div>
+      <div id="proResultsContainer" style="display:none;">
+        <div id="proMetricsContainer" class="pro-metrics"></div>
+        <div class="pro-charts">
+          <div class="pro-chart-card"><h3><i class="fas fa-cloud"></i> Palabras de riesgo detectadas</h3><div class="wordcloud-wrapper"><canvas id="wordcloud-canvas"></canvas></div></div>
+          <div class="pro-chart-card"><h3><i class="fas fa-chart-bar"></i> Palabras más frecuentes</h3><canvas id="freqWordsChart"></canvas></div>
         </div>
-        <div class="pro-chart-card">
-          <h3><i class="fas fa-chart-bar"></i> Palabras más frecuentes</h3>
-          <canvas id="freqWordsChart"></canvas>
+        <div class="pro-chart-card" style="margin-bottom:24px;"><h3><i class="fas fa-chart-column"></i> Distribución por nivel de riesgo</h3><canvas id="distributionChart" style="max-height:280px;"></canvas></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+          <h3 style="color:#00d4ff;display:flex;align-items:center;gap:8px;margin:0;"><i class="fas fa-table"></i> Registro detallado</h3>
+          <div style="display:flex;gap:10px;">
+            <button class="export-btn" onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+            <button class="export-btn export-btn-xlsx" onclick="exportXLSX()"><i class="fas fa-file-excel"></i> Excel</button>
+          </div>
         </div>
+        <div class="pro-info-box" style="margin-bottom:14px;"><i class="fas fa-circle-info"></i> Mostrando casos con Score &gt; 0 y "Revisión: Ambigüedad Médica"</div>
+        <div class="pro-table-wrap" id="proTableContainer"></div>
       </div>
-
-      <div class="pro-chart-card" style="margin-bottom:24px;">
-        <h3><i class="fas fa-chart-column"></i> Distribución por nivel de riesgo</h3>
-        <canvas id="distributionChart" style="max-height:280px;"></canvas>
-      </div>
-
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
-        <h3 style="color:#00d4ff; display:flex; align-items:center; gap:8px; margin:0;"><i class="fas fa-table"></i> Registro detallado</h3>
-        <div style="display:flex; gap:10px;">
-          <button class="export-btn" onclick="exportCSV()" title="Descargar CSV">
-            <i class="fas fa-file-csv"></i> CSV
-          </button>
-          <button class="export-btn export-btn-xlsx" onclick="exportXLSX()" title="Descargar Excel">
-            <i class="fas fa-file-excel"></i> Excel
-          </button>
+      <div id="proLoadingSpinner" class="spinner" style="display:none;"></div>
+      <div id="iaAnalysisSection" style="display:none;margin-top:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <h3 style="color:#e8c48a;display:flex;align-items:center;gap:10px;margin:0;font-family:'Playfair Display',serif;"><i class="fas fa-brain" style="color:#e8c48a;"></i> Interpretación Clínica IA</h3>
+          <button class="export-btn" onclick="runIAAnalysis()" id="iaRunBtn" style="border-color:rgba(232,196,138,0.5);color:#e8c48a;background:rgba(232,196,138,0.08);"><i class="fas fa-sparkles"></i> Generar análisis con IA</button>
         </div>
-      </div>
-      <div class="pro-info-box" style="margin-bottom:14px;">
-        <i class="fas fa-circle-info"></i> Mostrando casos con Score &gt; 0 y "Revisión: Ambigüedad Médica"
-      </div>
-      <div class="pro-table-wrap" id="proTableContainer"></div>
-
-    </div>
-
-    <div id="proLoadingSpinner" class="spinner" style="display:none;"></div>
-
-    <!-- ── ANÁLISIS IA ── -->
-    <div id="iaAnalysisSection" style="display:none; margin-top:28px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
-        <h3 style="color:#e8c48a;display:flex;align-items:center;gap:10px;margin:0;font-family:'Playfair Display',serif;">
-          <i class="fas fa-brain" style="color:#e8c48a;"></i> Interpretación Clínica IA
-        </h3>
-        <button class="export-btn" onclick="runIAAnalysis()" id="iaRunBtn"
-          style="border-color:rgba(232,196,138,0.5);color:#e8c48a;background:rgba(232,196,138,0.08);">
-          <i class="fas fa-sparkles"></i> Generar análisis con IA
-        </button>
-      </div>
-      <div id="iaAnalysisBox" style="background:rgba(255,255,255,0.03);border:1px solid rgba(232,196,138,0.25);border-radius:16px;padding:28px;min-height:80px;">
-        <p style="color:#606070;font-size:0.9rem;text-align:center;margin:0;">
-          <i class="fas fa-arrow-up" style="margin-right:6px;"></i>
-          Haz clic en "Generar análisis" para obtener una interpretación clínica de los casos de alto riesgo.
-        </p>
+        <div id="iaAnalysisBox" style="background:rgba(255,255,255,0.03);border:1px solid rgba(232,196,138,0.25);border-radius:16px;padding:28px;min-height:80px;">
+          <p style="color:#606070;font-size:0.9rem;text-align:center;margin:0;"><i class="fas fa-arrow-up" style="margin-right:6px;"></i>Haz clic en "Generar análisis" para obtener una interpretación clínica de los casos de alto riesgo.</p>
+        </div>
       </div>
     </div>
 
-  </div>
-</div>
+    <!-- TAB: EVALUACIÓN CLÍNICA (salud) -->
+    <div class="pro-tab-panel" id="panel-eval">
+      <div class="checklist-card">
+        <h4><i class="fas fa-list-check"></i> Escala Columbia — Evaluación de Ideación Suicida (C-SSRS adaptada)</h4>
+        <p style="font-size:0.82rem;color:#707080;margin-bottom:14px;">Marque los ítems presentes en el paciente durante la entrevista. El puntaje orienta el nivel de intervención requerido.</p>
+        <div id="columbia-checklist"></div>
+        <div class="score-bar">
+          <div><div class="score-val" id="columbia-score">0</div><div class="score-label">Puntaje acumulado</div></div>
+          <div><div class="score-badge bajo" id="columbia-badge">Sin riesgo identificado</div><div class="score-label" style="margin-top:4px;" id="columbia-action">Continuar evaluación clínica de rutina</div></div>
+        </div>
+      </div>
+      <div class="checklist-card" style="margin-top:16px;">
+        <h4><i class="fas fa-shield-virus"></i> Factores de riesgo y protectores</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <p style="font-size:0.8rem;color:#ff6b5b;margin-bottom:8px;font-weight:600;"><i class="fas fa-triangle-exclamation"></i> Factores de RIESGO presentes</p>
+            <div id="risk-factors-list"></div>
+          </div>
+          <div>
+            <p style="font-size:0.8rem;color:#6fbf73;margin-bottom:8px;font-weight:600;"><i class="fas fa-shield-check"></i> Factores PROTECTORES presentes</p>
+            <div id="protect-factors-list"></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;" class="pro-info-box">
+        <h4><i class="fas fa-stethoscope"></i> Recomendación basada en puntaje</h4>
+        <p id="columbia-recommendation" style="color:#c0c0d0;margin-top:6px;font-size:0.88rem;line-height:1.7;">Complete la evaluación para ver la recomendación.</p>
+      </div>
+    </div>
+
+    <!-- TAB: PROTOCOLO -->
+    <div class="pro-tab-panel" id="panel-protocol">
+      <div id="protocol-salud">
+        <div class="pro-info-box" style="margin-bottom:20px;"><h4><i class="fas fa-triangle-exclamation"></i> Protocolo de intervención en crisis suicida</h4>Basado en lineamientos de la OPS/OMS y la Norma Oficial Mexicana NOM-025-SSA2.</div>
+        <div class="protocol-steps">
+          <div class="protocol-step"><div class="step-num-pro">1</div><div class="step-body"><strong>Garantizar seguridad inmediata</strong><p>Retira del entorno acceso a medios letales (medicamentos, objetos cortantes, armas). Si hay riesgo inminente, no dejes al paciente solo. Activa protocolo de hospitalización si es necesario.</p></div></div>
+          <div class="protocol-step"><div class="step-num-pro">2</div><div class="step-body"><strong>Establecer vínculo terapéutico</strong><p>Escucha activa sin juzgar. Valida el dolor sin reforzar la ideación. Evita argumentar "razones para vivir" de forma directiva. Pregunta directamente: "¿Estás pensando en quitarte la vida?"</p></div></div>
+          <div class="protocol-step step-warn"><div class="step-num-pro">3</div><div class="step-body"><strong>Evaluar nivel de riesgo (C-SSRS)</strong><p>Usa la escala Columbia para determinar si el riesgo es pasivo, activo sin plan, activo con plan, o activo con intención y acceso a medios. Documenta en el expediente clínico.</p></div></div>
+          <div class="protocol-step step-warn"><div class="step-num-pro">4</div><div class="step-body"><strong>Plan de seguridad personalizado</strong><p>Elabora con el paciente un plan que incluya: señales de advertencia propias, estrategias de afrontamiento, personas de confianza, recursos de crisis (800 290-0024) y restricción de medios.</p></div></div>
+          <div class="protocol-step step-danger"><div class="step-num-pro">5</div><div class="step-body"><strong>Riesgo alto/extremo: hospitalización</strong><p>Contacta urgencias psiquiátricas. En Guanajuato: HRAEB León (477-267-1400), Hospital Especialidades Irapuato (462-624-2200). Informa a familiar responsable con consentimiento del paciente.</p></div></div>
+          <div class="protocol-step"><div class="step-num-pro">6</div><div class="step-body"><strong>Seguimiento estructurado post-crisis</strong><p>Contacto en 24–72 hrs post-crisis. Citas semanales en fase aguda. Psicoeducación al núcleo familiar. Evalúa adherencia a tratamiento farmacológico si aplica. Documenta cada contacto.</p></div></div>
+        </div>
+      </div>
+      <div id="protocol-maestro" style="display:none;">
+        <div class="pro-info-box" style="margin-bottom:20px;"><h4><i class="fas fa-school"></i> Protocolo escolar de actuación — SEP / SSG Guanajuato</h4>Pasos oficiales ante sospecha de riesgo suicida en el entorno educativo.</div>
+        <div class="protocol-steps">
+          <div class="protocol-step"><div class="step-num-pro">1</div><div class="step-body"><strong>Hablar en privado con el alumno</strong><p>Pide hablar a solas en un lugar seguro. Usa un tono calmado y directo. Pregunta sin rodeos: "He notado que pareces estar pasando por algo difícil. ¿Estás pensando en hacerte daño?" Escucha sin interrumpir.</p></div></div>
+          <div class="protocol-step step-warn"><div class="step-num-pro">2</div><div class="step-body"><strong>NO prometer confidencialidad</strong><p>Si el alumno te pide guardar el secreto, responde: "No puedo prometerte que guardaré esto en secreto si me preocupa tu seguridad, pero sí puedo prometerte que buscaremos ayuda juntos."</p></div></div>
+          <div class="protocol-step step-warn"><div class="step-num-pro">3</div><div class="step-body"><strong>Notificar a orientación educativa</strong><p>Informa inmediatamente al área de orientación, trabajo social o dirección de tu institución. No actúes solo. Lleva contigo las observaciones escritas. Si no hay orientador, contacta al supervisor de zona escolar.</p></div></div>
+          <div class="protocol-step step-danger"><div class="step-num-pro">4</div><div class="step-body"><strong>Notificar a padres/tutores ese mismo día</strong><p>La institución debe contactar a la familia. Entrega los recursos de crisis: CONASAMA 800 290-0024 y SSG 800 002-2700. Recomienda atención psicológica de inmediato.</p></div></div>
+          <div class="protocol-step step-danger"><div class="step-num-pro">5</div><div class="step-body"><strong>Crisis inminente: activa servicios de emergencia</strong><p>Si el alumno ha tomado pastillas, tiene un objeto con el que planea hacerse daño o menciona que lo hará hoy: llama al 911 de inmediato. Permanece con el alumno hasta que llegue ayuda.</p></div></div>
+          <div class="protocol-step"><div class="step-num-pro">6</div><div class="step-body"><strong>Cuidado del docente y del grupo</strong><p>Después de una crisis, tú también puedes sentirte afectado. Busca apoyo en tu institución. Trabaja en el aula con mensajes de esperanza, evitando glorificación o detalles del método.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: NOTAS CLÍNICAS (salud) -->
+    <div class="pro-tab-panel" id="panel-notes">
+      <div class="pro-sidebar">
+        <h3><i class="fas fa-notes-medical"></i> Nuevo registro de caso</h3>
+        <div class="pro-form-row">
+          <div class="pro-form-group"><label>Identificador del paciente</label><input type="text" class="pro-form-input" id="note-id" placeholder="P-001 / iniciales / código"></div>
+          <div class="pro-form-group"><label>Fecha de la sesión</label><input type="date" class="pro-form-input" id="note-date"></div>
+        </div>
+        <div class="pro-form-row">
+          <div class="pro-form-group"><label>Nivel de riesgo evaluado</label>
+            <select class="pro-form-input" id="note-risk">
+              <option value="">— Seleccionar —</option>
+              <option value="nulo">Nulo / Sin riesgo</option>
+              <option value="bajo">Bajo — Precaución leve</option>
+              <option value="medio">Medio — Vigilancia activa</option>
+              <option value="alto">Alto — Atención requerida</option>
+              <option value="extremo">Extremo — Intervención inmediata</option>
+            </select>
+          </div>
+          <div class="pro-form-group"><label>Modalidad de atención</label>
+            <select class="pro-form-input" id="note-modality">
+              <option value="consulta">Consulta individual</option>
+              <option value="urgencias">Urgencias / Crisis</option>
+              <option value="seguimiento">Seguimiento post-crisis</option>
+              <option value="grupal">Intervención grupal</option>
+              <option value="telefonica">Atención telefónica</option>
+            </select>
+          </div>
+        </div>
+        <div class="pro-form-group"><label>Motivo de consulta / observaciones clínicas</label><textarea class="pro-form-textarea" id="note-obs" placeholder="Describe el estado del paciente, indicadores observados, intervención realizada…"></textarea></div>
+        <div class="pro-form-group"><label>Plan de acción / próximos pasos</label><textarea class="pro-form-textarea" id="note-plan" placeholder="Seguimiento programado, derivación, plan de seguridad…" style="min-height:70px;"></textarea></div>
+        <div class="pro-form-actions">
+          <button class="pro-btn-sm outline" onclick="clearNoteForm()"><i class="fas fa-eraser"></i> Limpiar</button>
+          <button class="pro-btn-sm primary" onclick="saveNote()"><i class="fas fa-save"></i> Guardar registro</button>
+        </div>
+      </div>
+      <div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <h3 style="color:#00d4ff;font-size:0.95rem;margin:0;"><i class="fas fa-list"></i> Registros de esta sesión</h3>
+          <button class="export-btn" onclick="exportNotes()" style="font-size:0.78rem;padding:6px 12px;"><i class="fas fa-file-csv"></i> Exportar</button>
+        </div>
+        <div id="notes-log"><p style="color:#505060;font-size:0.85rem;text-align:center;padding:20px 0;">No hay registros aún.</p></div>
+      </div>
+    </div>
+
+    <!-- TAB: OBSERVACIÓN GRUPAL (maestros) -->
+    <div class="pro-tab-panel" id="panel-classroom">
+      <div class="checklist-card">
+        <h4><i class="fas fa-users-viewfinder"></i> Checklist de observación del alumno en el aula</h4>
+        <p style="font-size:0.82rem;color:#707080;margin-bottom:14px;">Marca los cambios de conducta que hayas observado en el alumno en los últimos 30 días.</p>
+        <div id="classroom-checklist"></div>
+        <div class="score-bar">
+          <div><div class="score-val" id="classroom-score">0</div><div class="score-label">Señales presentes</div></div>
+          <div><div class="score-badge bajo" id="classroom-badge">Sin señales significativas</div><div class="score-label" style="margin-top:4px;" id="classroom-action">Mantener observación regular</div></div>
+        </div>
+      </div>
+      <div class="checklist-card" style="margin-top:16px;">
+        <h4><i class="fas fa-pencil"></i> Registro rápido del alumno</h4>
+        <div class="pro-form-row">
+          <div class="pro-form-group"><label>Identificador del alumno</label><input type="text" class="pro-form-input" id="student-id" placeholder="Iniciales o número de lista"></div>
+          <div class="pro-form-group"><label>Grado / grupo</label><input type="text" class="pro-form-input" id="student-group" placeholder="ej. 3°B"></div>
+        </div>
+        <div class="pro-form-group"><label>Observaciones de comportamiento</label><textarea class="pro-form-textarea" id="student-obs" placeholder="Cambios observados, conversaciones relevantes, contexto familiar conocido…"></textarea></div>
+        <div class="pro-form-actions"><button class="pro-btn-sm primary" onclick="saveStudentNote()"><i class="fas fa-save"></i> Guardar observación</button></div>
+        <div id="student-notes-log" style="margin-top:16px;"></div>
+      </div>
+    </div>
+
+    <!-- TAB: GUÍA FAMILIAR (maestros) -->
+    <div class="pro-tab-panel" id="panel-parent">
+      <div class="pro-info-box" style="margin-bottom:20px;"><h4><i class="fas fa-people-arrows"></i> Cómo hablar con la familia del alumno</h4>Guiones de conversación orientativos para abordar situaciones difíciles con padres y tutores.</div>
+      <div class="checklist-card">
+        <h4><i class="fas fa-phone-flip"></i> Guión para primera llamada a padres</h4>
+        <div class="script-box"><div class="script-label">Apertura</div><p>"Buenas tardes, hablo del [escuela]. Soy [nombre], maestro de [alumno]. Quiero hablarle sobre algo que me ha preocupado esta semana y que quiero compartir con usted con calma."</p><div class="script-note">🔹 Mantén un tono tranquilo, no alarmista.</div></div>
+        <div class="script-box"><div class="script-label">Descripción de los hechos</div><p>"He notado que [alumno] ha tenido cambios en su comportamiento: [describe concretamente]. Quiero asegurarme de que esté bien."</p><div class="script-note">🔹 Sé específico y concreto. No interpretes, solo describe lo que observaste.</div></div>
+        <div class="script-box"><div class="script-label">Solicitar apoyo</div><p>"¿Han notado algo similar en casa? Quisiera que consideraran hablar con un especialista. Puedo darles los datos de recursos gratuitos en Guanajuato."</p><div class="script-note">🔹 No diagnostiques ni uses palabras como "suicida". Habla de "preocupación por su bienestar emocional".</div></div>
+        <div class="script-box"><div class="script-label">Cierre</div><p>"Lo que me importa es que [alumno] esté bien. Estamos de su lado. ¿Podemos reunirnos esta semana para hablar con más calma?"</p></div>
+      </div>
+      <div class="checklist-card" style="margin-top:16px;">
+        <h4><i class="fas fa-triangle-exclamation"></i> Qué NO decir a la familia</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.2);border-radius:10px;padding:14px;">
+            <p style="color:#ff6b5b;font-size:0.82rem;font-weight:600;margin-bottom:6px;"><i class="fas fa-ban"></i> Evitar</p>
+            <ul style="font-size:0.82rem;color:#909090;line-height:1.8;padding-left:16px;margin:0;"><li>"Su hijo es suicida"</li><li>"Esto pasó por su culpa"</li><li>"No es para tanto"</li><li>"En mi tiempo no había esto"</li><li>"Seguro es por el celular"</li></ul>
+          </div>
+          <div style="background:rgba(111,191,115,0.07);border:1px solid rgba(111,191,115,0.2);border-radius:10px;padding:14px;">
+            <p style="color:#6fbf73;font-size:0.82rem;font-weight:600;margin-bottom:6px;"><i class="fas fa-check"></i> Usar en cambio</p>
+            <ul style="font-size:0.82rem;color:#909090;line-height:1.8;padding-left:16px;margin:0;"><li>"Noto cambios que me preocupan"</li><li>"Necesita apoyo profesional"</li><li>"Está pasando por algo difícil"</li><li>"Podemos buscar ayuda juntos"</li><li>"¿Qué han notado en casa?"</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RECURSOS -->
+    <div class="pro-tab-panel" id="panel-resources">
+      <div id="resources-salud">
+        <div class="checklist-card">
+          <h4><i class="fas fa-hospital"></i> Hospitales de referencia — Guanajuato</h4>
+          <div class="protocol-steps" style="gap:10px;">
+            <div class="protocol-step step-danger"><div class="step-num-pro"><i class="fas fa-ambulance" style="font-size:11px;"></i></div><div class="step-body"><strong>HRAEB — Urgencias Psiquiátricas (León)</strong><p>Hospital Regional de Alta Especialidad del Bajío · Tel: 477-267-1400 · Blvd. Campestre 1002, León, Gto.</p></div></div>
+            <div class="protocol-step step-danger"><div class="step-num-pro"><i class="fas fa-ambulance" style="font-size:11px;"></i></div><div class="step-body"><strong>Hospital de Especialidades Irapuato (IMSS)</strong><p>Urgencias psiquiátricas · Tel: 462-624-2200 · Blvd. Juan José Torres Landa S/N, Irapuato</p></div></div>
+            <div class="protocol-step"><div class="step-num-pro"><i class="fas fa-phone" style="font-size:11px;"></i></div><div class="step-body"><strong>CONASAMA — Línea de la Vida · 800 290-0024</strong><p>Crisis suicida 24 hrs · Gratuito, confidencial · Derivación a servicios locales</p></div></div>
+            <div class="protocol-step"><div class="step-num-pro"><i class="fas fa-phone" style="font-size:11px;"></i></div><div class="step-body"><strong>SSG — Salud Mental Guanajuato · 800 002-2700</strong><p>Centros comunitarios de salud mental en todo el estado</p></div></div>
+          </div>
+          <div class="resource-chips" style="margin-top:16px;">
+            <a href="https://www.gob.mx/salud/conasama" target="_blank" class="resource-chip"><i class="fas fa-arrow-up-right-from-square"></i> CONASAMA</a>
+            <a href="https://ssg.guanajuato.gob.mx" target="_blank" class="resource-chip"><i class="fas fa-arrow-up-right-from-square"></i> SSG Guanajuato</a>
+            <a href="https://www.hraeb.salud.gob.mx" target="_blank" class="resource-chip"><i class="fas fa-arrow-up-right-from-square"></i> HRAEB</a>
+            <a href="https://cssrs.columbia.edu/wp-content/uploads/C-SSRS_Pediatric-SLC_11.14.12.pdf" target="_blank" class="resource-chip gold"><i class="fas fa-arrow-up-right-from-square"></i> Escala C-SSRS</a>
+            <a href="https://iris.paho.org/handle/10665.2/50915" target="_blank" class="resource-chip gold"><i class="fas fa-arrow-up-right-from-square"></i> OPS/LIVE LIFE</a>
+          </div>
+        </div>
+      </div>
+      <div id="resources-maestro" style="display:none;">
+        <div class="checklist-card">
+          <h4><i class="fas fa-graduation-cap"></i> Recursos para docentes — SEP y SSG</h4>
+          <div class="protocol-steps" style="gap:10px;">
+            <div class="protocol-step"><div class="step-num-pro"><i class="fas fa-phone" style="font-size:11px;"></i></div><div class="step-body"><strong>CONASAMA — 800 290-0024</strong><p>Atienden también a docentes que se encuentran ante una situación de crisis con un alumno. Orientación en tiempo real.</p></div></div>
+            <div class="protocol-step"><div class="step-num-pro"><i class="fas fa-phone" style="font-size:11px;"></i></div><div class="step-body"><strong>SSG Guanajuato — 800 002-2700</strong><p>Derivación a Centros de Salud Mental comunitarios en tu municipio.</p></div></div>
+            <div class="protocol-step"><div class="step-num-pro"><i class="fas fa-phone" style="font-size:11px;"></i></div><div class="step-body"><strong>DIF Nacional — 800 222-2268</strong><p>Atención en casos donde el malestar emocional esté relacionado con violencia familiar o maltrato.</p></div></div>
+            <div class="protocol-step step-warn"><div class="step-num-pro"><i class="fas fa-school" style="font-size:11px;"></i></div><div class="step-body"><strong>Supervisor de Zona Escolar</strong><p>Ante cualquier situación de riesgo, el director y el supervisor de zona deben ser notificados. Ellos activan el protocolo SEP de salud mental escolar.</p></div></div>
+          </div>
+          <div class="resource-chips" style="margin-top:16px;">
+            <a href="https://www.sep.gob.mx/prioridades/salud-mental/" target="_blank" class="resource-chip"><i class="fas fa-arrow-up-right-from-square"></i> SEP Salud Mental</a>
+            <a href="https://ssg.guanajuato.gob.mx" target="_blank" class="resource-chip"><i class="fas fa-arrow-up-right-from-square"></i> SSG Guanajuato</a>
+            <a href="https://www.who.int/docs/default-source/mental-health/suicide/preventing-suicide-teacher.pdf" target="_blank" class="resource-chip gold"><i class="fas fa-file-pdf"></i> OMS Guía Docentes</a>
+            <a href="https://iris.paho.org/handle/10665.2/28150" target="_blank" class="resource-chip gold"><i class="fas fa-file-pdf"></i> OPS Escuelas</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div></div>
 
 <!-- ══════════════════════════════════════════════
      PANTALLA 4: CHAT CON IA (GROQ) - ENFOQUE EMPÁTICO Y CÁLIDO
@@ -1317,17 +1655,44 @@ td { padding:11px 15px; border-bottom:1px solid rgba(0,212,255,0.12); font-size:
 
     <div class="chat-input-area">
       <div class="chat-file-preview-bar" id="chat-file-preview-bar" style="display:none;"></div>
+
+      <!-- Voice status indicator -->
+      <div class="voice-status" id="voice-status">
+        <div class="voice-waves">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        Escuchando… habla ahora
+        <span id="voice-interim" style="font-style:italic;opacity:0.75;"></span>
+      </div>
+
       <div class="chat-input-row">
         <button class="chat-btn chat-btn-attach" onclick="document.getElementById('chat-file-input').click()" title="Adjuntar imagen o archivo">
           <i class="fas fa-paperclip"></i>
         </button>
         <input type="file" id="chat-file-input" accept="image/*,.pdf,.txt,.csv" multiple>
         <textarea id="chat-input" rows="1" placeholder="Escríbeme cómo te sientes…" onkeydown="chatKeyHandler(event)" oninput="autoResize(this);updateCharCount(this)"></textarea>
+        <button class="chat-btn-mic" id="mic-btn" onclick="toggleVoiceInput()" title="Hablar con Aura">
+          <i class="fas fa-microphone"></i>
+        </button>
         <button class="chat-btn chat-btn-send" id="chat-send-btn" onclick="sendMessage()" title="Enviar">
           <i class="fas fa-paper-plane"></i>
         </button>
       </div>
-      <div class="char-counter" id="char-counter" style="display:none;"></div>
+
+      <!-- Bottom bar: char counter + TTS toggle -->
+      <div class="voice-bar">
+        <div class="tts-speaking-indicator" id="tts-indicator">
+          <i class="fas fa-volume-high"></i> Aura está hablando…
+          <button onclick="stopTTS()" style="background:none;border:none;cursor:pointer;color:var(--teal);font-size:0.75rem;padding:0 0 0 4px;">
+            <i class="fas fa-stop"></i> Detener
+          </button>
+        </div>
+        <label title="Aura te responderá en voz alta">
+          <input type="checkbox" id="tts-toggle" onchange="setTTS(this.checked)">
+          <i class="fas fa-volume-low" style="color:var(--teal);"></i> Respuesta en voz
+        </label>
+        <div class="char-counter" id="char-counter" style="display:none;"></div>
+      </div>
     </div>
 
   </div>
@@ -1342,6 +1707,8 @@ let currentProfile = null;
 let fileData = null;
 let fileName = '';
 let results = [];
+let sessionNotes = [];
+let studentNotes = [];
 
 // ── DARK MODE ──
 function toggleDark() {
@@ -1380,6 +1747,34 @@ function enterApp(profile) {
   currentProfile = profile;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 
+  // Configure professional tabs based on profile
+  if (profile === 'salud') {
+    document.getElementById('tab-eval').style.display = '';
+    document.getElementById('tab-notes').style.display = '';
+    document.getElementById('tab-classroom').style.display = 'none';
+    document.getElementById('tab-parent').style.display = 'none';
+    document.getElementById('protocol-salud').style.display = 'block';
+    document.getElementById('protocol-maestro').style.display = 'none';
+    document.getElementById('resources-salud').style.display = 'block';
+    document.getElementById('resources-maestro').style.display = 'none';
+    document.getElementById('pro-main-title').innerHTML = '<i class="fas fa-stethoscope"></i> Panel Clínico — Riesgo Suicida';
+    initColumbiaChecklist();
+    initRiskFactors();
+  } else if (profile === 'maestro') {
+    document.getElementById('tab-eval').style.display = 'none';
+    document.getElementById('tab-notes').style.display = 'none';
+    document.getElementById('tab-classroom').style.display = '';
+    document.getElementById('tab-parent').style.display = '';
+    document.getElementById('protocol-salud').style.display = 'none';
+    document.getElementById('protocol-maestro').style.display = 'block';
+    document.getElementById('resources-salud').style.display = 'none';
+    document.getElementById('resources-maestro').style.display = 'block';
+    document.getElementById('pro-main-title').innerHTML = '<i class="fas fa-chalkboard-teacher"></i> Panel Educativo — Detección y Actuación';
+    initClassroomChecklist();
+  }
+  // Reset to first tab
+  switchProTab('analisys');
+
   if (profile === 'joven' || profile === 'adulto') {
     document.getElementById('s-personal').classList.add('active');
     const badge = document.getElementById('personal-badge');
@@ -1396,15 +1791,12 @@ function enterApp(profile) {
     document.getElementById('s-professional').classList.add('active');
     const badge = document.getElementById('pro-badge');
     const roleDesc = document.getElementById('pro-role-desc');
-    const eduGuide = document.getElementById('educatorGuidance');
     if (profile === 'salud') {
       badge.textContent = 'Profesional de Salud';
       roleDesc.textContent = 'profesionales de la salud';
-      eduGuide.style.display = 'none';
     } else {
       badge.textContent = 'Maestro / Educador';
       roleDesc.textContent = 'educadores y docentes';
-      eduGuide.style.display = 'block';
     }
     window.scrollTo(0, 0);
   }
@@ -1874,7 +2266,7 @@ async function runIAAnalysis() {
 
   const muestrasAlto = casosAlto.slice(0, 5).map((r, i) =>
     `Caso ${i+1} [Score ${r.Score}]: "${r.Texto.slice(0, 120)}${r.Texto.length > 120 ? '…' : ''}" — Indicadores: ${r.Detalles}`
-  ).join('\n');
+  ).join('\\n');
 
   const prompt = `Eres un psicólogo clínico experto en detección de riesgo suicida y bienestar emocional. Se te presenta el resultado de un análisis automatizado de mensajes o respuestas escritas.
 
@@ -1944,7 +2336,7 @@ function exportCSV() {
     r.Score,
     '"' + (r.Detalles || '') + '"'
   ]);
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1996,6 +2388,256 @@ function exportXLSX() {
   XLSX.writeFile(wb, 'analisis_riesgo_' + new Date().toISOString().slice(0,10) + '.xlsx');
 }
 
+// ══════════════════════════════════════════════
+// PRO TABS
+// ══════════════════════════════════════════════
+function switchProTab(name) {
+  document.querySelectorAll('.pro-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pro-tab-panel').forEach(p => p.classList.remove('active'));
+  const tab = document.getElementById('tab-' + name);
+  const panel = document.getElementById('panel-' + name);
+  if (tab) tab.classList.add('active');
+  if (panel) panel.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// COLUMBIA C-SSRS CHECKLIST (for salud)
+// ══════════════════════════════════════════════
+const COLUMBIA_ITEMS = [
+  { text: 'Deseos pasivos de muerte ("quisiera estar muerto" sin plan activo)', weight: 1 },
+  { text: 'Ideación suicida activa sin plan ni intención', weight: 2 },
+  { text: 'Ideación suicida activa con algún método, pero sin plan específico', weight: 3 },
+  { text: 'Ideación suicida con plan e intención de actuar', weight: 4 },
+  { text: 'Ideación suicida con plan, intención y preparación activa', weight: 5 },
+  { text: 'Intento de suicidio interrumpido por circunstancias externas', weight: 5 },
+  { text: 'Intento de suicidio en las últimas 3 semanas', weight: 5 },
+  { text: 'Comportamiento autolesivo sin intención suicida explícita', weight: 2 },
+  { text: 'Aislamiento social marcado o reciente', weight: 1 },
+  { text: 'Pérdida reciente significativa (trabajo, relación, duelo)', weight: 1 },
+  { text: 'Acceso a medios letales (armas, medicamentos en cantidad)', weight: 2 },
+  { text: 'Abuso de alcohol o sustancias activo', weight: 2 },
+  { text: 'Episodio previo de intento de suicidio', weight: 3 },
+  { text: 'Desesperanza persistente expresada verbalmente', weight: 2 },
+];
+
+function initColumbiaChecklist() {
+  const container = document.getElementById('columbia-checklist');
+  if (!container) return;
+  container.innerHTML = COLUMBIA_ITEMS.map((item, i) => `
+    <div class="check-item" id="ci-${i}" onclick="toggleColumbiaItem(${i})">
+      <input type="checkbox" id="cb-${i}">
+      <label for="cb-${i}">${item.text} <span style="color:#00d4ff;font-size:0.75rem;">[+${item.weight}]</span></label>
+    </div>`).join('');
+  updateColumbiaScore();
+}
+
+function toggleColumbiaItem(i) {
+  const cb = document.getElementById('cb-' + i);
+  cb.checked = !cb.checked;
+  document.getElementById('ci-' + i).classList.toggle('checked', cb.checked);
+  updateColumbiaScore();
+}
+
+function updateColumbiaScore() {
+  let score = 0;
+  COLUMBIA_ITEMS.forEach((item, i) => {
+    const cb = document.getElementById('cb-' + i);
+    if (cb && cb.checked) score += item.weight;
+  });
+  document.getElementById('columbia-score').textContent = score;
+  const badge = document.getElementById('columbia-badge');
+  const action = document.getElementById('columbia-action');
+  const rec = document.getElementById('columbia-recommendation');
+  if (score === 0) {
+    badge.className = 'score-badge bajo'; badge.textContent = 'Sin riesgo identificado';
+    action.textContent = 'Continuar evaluación clínica de rutina';
+    rec.textContent = 'No se identifican indicadores activos. Continúa la evaluación de rutina y mantén seguimiento si hay factores de vulnerabilidad presentes.';
+  } else if (score <= 3) {
+    badge.className = 'score-badge bajo'; badge.textContent = 'Riesgo bajo';
+    action.textContent = 'Monitoreo y plan de seguridad básico';
+    rec.textContent = 'Elabora un plan de seguridad básico con el paciente. Agenda cita de seguimiento en 1–2 semanas. Psicoeducación al núcleo de apoyo cercano.';
+  } else if (score <= 7) {
+    badge.className = 'score-badge medio'; badge.textContent = 'Riesgo moderado';
+    action.textContent = 'Intervención activa + seguimiento semanal';
+    rec.textContent = 'Intervención psicoterapéutica de urgencia. Plan de seguridad detallado. Restricción de medios letales. Citas semanales. Considera apoyo psiquiátrico para evaluación farmacológica.';
+  } else if (score <= 12) {
+    badge.className = 'score-badge alto'; badge.textContent = 'Riesgo alto';
+    action.textContent = 'Evaluación psiquiátrica urgente';
+    rec.textContent = 'Requiere evaluación psiquiátrica urgente (≤24 hrs). No dejes al paciente sin acompañamiento. Restringe acceso a medios. Evalúa criterios de hospitalización. Contacta a familiar de referencia.';
+  } else {
+    badge.className = 'score-badge extremo'; badge.textContent = '⚠ RIESGO EXTREMO';
+    action.textContent = 'Hospitalización — activar protocolo de urgencias';
+    rec.textContent = '🚨 Activar protocolo de hospitalización inmediata. Contactar urgencias psiquiátricas: HRAEB León 477-267-1400 · Especialidades Irapuato 462-624-2200. No dejar al paciente solo bajo ninguna circunstancia.';
+  }
+}
+
+// ══════════════════════════════════════════════
+// FACTORES DE RIESGO Y PROTECTORES
+// ══════════════════════════════════════════════
+const RISK_FACTORS = [
+  'Diagnóstico de depresión mayor o trastorno bipolar','Esquizofrenia o psicosis activa',
+  'Trastorno por uso de sustancias','Antecedentes familiares de suicidio',
+  'Trauma o abuso en la infancia','Dolor crónico o enfermedad terminal',
+  'Desempleo o crisis económica grave','Ruptura amorosa o pérdida reciente',
+  'Acceso a armas de fuego','Impulsividad alta documentada',
+];
+const PROTECT_FACTORS = [
+  'Red de apoyo familiar activa','Creencias religiosas o espirituales fuertes',
+  'Hijos u otras responsabilidades de cuidado','Tratamiento psicológico en curso',
+  'Empleo estable','Razones para vivir identificadas por el paciente',
+  'Habilidades de afrontamiento desarrolladas','Miedo al dolor o a la muerte',
+  'Apoyo social fuera de la familia','Plan de vida con metas a futuro',
+];
+
+function initRiskFactors() {
+  const rEl = document.getElementById('risk-factors-list');
+  const pEl = document.getElementById('protect-factors-list');
+  if (!rEl || !pEl) return;
+  rEl.innerHTML = RISK_FACTORS.map((f, i) => `
+    <div class="check-item" onclick="toggleCheckFactor('rf-${i}',this)">
+      <input type="checkbox" id="rf-${i}">
+      <label for="rf-${i}" style="font-size:0.82rem;">${f}</label>
+    </div>`).join('');
+  pEl.innerHTML = PROTECT_FACTORS.map((f, i) => `
+    <div class="check-item" onclick="toggleCheckFactor('pf-${i}',this)">
+      <input type="checkbox" id="pf-${i}">
+      <label for="pf-${i}" style="font-size:0.82rem;">${f}</label>
+    </div>`).join('');
+}
+
+function toggleCheckFactor(id, el) {
+  const cb = document.getElementById(id);
+  cb.checked = !cb.checked;
+  el.classList.toggle('checked', cb.checked);
+}
+
+// ══════════════════════════════════════════════
+// NOTAS CLÍNICAS
+// ══════════════════════════════════════════════
+function saveNote() {
+  const id = document.getElementById('note-id').value.trim();
+  const date = document.getElementById('note-date').value;
+  const risk = document.getElementById('note-risk').value;
+  const modality = document.getElementById('note-modality').value;
+  const obs = document.getElementById('note-obs').value.trim();
+  const plan = document.getElementById('note-plan').value.trim();
+  if (!id || !obs) { alert('Completa al menos el identificador y las observaciones.'); return; }
+  const note = { id, date: date || new Date().toLocaleDateString('es-MX'), risk, modality, obs, plan, ts: Date.now() };
+  sessionNotes.unshift(note);
+  renderNotesLog();
+  clearNoteForm();
+}
+
+function clearNoteForm() {
+  ['note-id','note-date','note-obs','note-plan'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('note-risk').value = '';
+  document.getElementById('note-modality').value = 'consulta';
+}
+
+const riskColors = { nulo:'#6fbf73', bajo:'#6fbf73', medio:'#f0a040', alto:'#ff6b5b', extremo:'#ff3333' };
+
+function renderNotesLog() {
+  const container = document.getElementById('notes-log');
+  if (!sessionNotes.length) { container.innerHTML = '<p style="color:#505060;font-size:0.85rem;text-align:center;padding:20px 0;">No hay registros aún.</p>'; return; }
+  container.innerHTML = sessionNotes.map(n => `
+    <div class="log-entry">
+      <span class="log-badge" style="background:${riskColors[n.risk]||'#00d4ff'}22;color:${riskColors[n.risk]||'#00d4ff'};border:1px solid ${riskColors[n.risk]||'#00d4ff'}44;">${(n.risk||'N/A').toUpperCase()}</span>
+      <div class="log-text"><strong>${n.id} · ${n.modality}</strong><p>${n.obs.slice(0,120)}${n.obs.length>120?'…':''}</p></div>
+      <span class="log-date">${n.date}</span>
+    </div>`).join('');
+}
+
+function exportNotes() {
+  if (!sessionNotes.length) { alert('No hay registros para exportar.'); return; }
+  const headers = ['ID','Fecha','Riesgo','Modalidad','Observaciones','Plan'];
+  const rows = sessionNotes.map(n => [n.id, n.date, n.risk, n.modality,
+    '"'+n.obs.replace(/"/g,'""')+'"', '"'+(n.plan||'').replace(/"/g,'""')+'"']);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'notas_clinicas_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+
+// ══════════════════════════════════════════════
+// CLASSROOM OBSERVATION CHECKLIST (maestros)
+// ══════════════════════════════════════════════
+const CLASSROOM_ITEMS = [
+  { text: 'Aislamiento marcado del grupo (deja de relacionarse con amigos habituales)', weight: 2 },
+  { text: 'Caída brusca en rendimiento académico sin causa aparente', weight: 2 },
+  { text: 'Expresiones verbales sobre no querer vivir, ser una carga o desaparecer', weight: 3 },
+  { text: 'Cambios en apariencia personal (descuido notable, ropa que cubre cicatrices)', weight: 2 },
+  { text: 'Escritos, dibujos o mensajes con temática de muerte o despedida', weight: 3 },
+  { text: 'Regala objetos personales significativos', weight: 3 },
+  { text: 'Pérdida de interés en actividades que antes disfrutaba', weight: 2 },
+  { text: 'Faltas de asistencia frecuentes sin justificación clara', weight: 1 },
+  { text: 'Irritabilidad o cambios bruscos de humor', weight: 1 },
+  { text: 'Signos visibles de autolesiones (cortes, quemaduras en brazos o piernas)', weight: 3 },
+  { text: 'Menciona situaciones de violencia o abuso en casa', weight: 3 },
+  { text: 'Ha sido víctima de bullying o ciberacoso', weight: 2 },
+  { text: 'Llanto frecuente o tristeza persistente en el aula', weight: 1 },
+  { text: 'Ha hecho preguntas sobre métodos para hacerse daño', weight: 3 },
+];
+
+function initClassroomChecklist() {
+  const container = document.getElementById('classroom-checklist');
+  if (!container) return;
+  container.innerHTML = CLASSROOM_ITEMS.map((item, i) => `
+    <div class="check-item" id="cci-${i}" onclick="toggleClassroomItem(${i})">
+      <input type="checkbox" id="ccb-${i}">
+      <label for="ccb-${i}">${item.text} <span style="color:#00d4ff;font-size:0.75rem;">[${item.weight}]</span></label>
+    </div>`).join('');
+  updateClassroomScore();
+}
+
+function toggleClassroomItem(i) {
+  const cb = document.getElementById('ccb-' + i);
+  cb.checked = !cb.checked;
+  document.getElementById('cci-' + i).classList.toggle('checked', cb.checked);
+  updateClassroomScore();
+}
+
+function updateClassroomScore() {
+  let score = 0;
+  CLASSROOM_ITEMS.forEach((item, i) => {
+    const cb = document.getElementById('ccb-' + i);
+    if (cb && cb.checked) score += item.weight;
+  });
+  document.getElementById('classroom-score').textContent = score;
+  const badge = document.getElementById('classroom-badge');
+  const action = document.getElementById('classroom-action');
+  if (score === 0) {
+    badge.className = 'score-badge bajo'; badge.textContent = 'Sin señales significativas';
+    action.textContent = 'Mantener observación regular';
+  } else if (score <= 4) {
+    badge.className = 'score-badge bajo'; badge.textContent = 'Señales leves';
+    action.textContent = 'Aumentar observación y contacto cercano';
+  } else if (score <= 8) {
+    badge.className = 'score-badge medio'; badge.textContent = 'Señales moderadas';
+    action.textContent = 'Hablar con el alumno y notificar a orientación';
+  } else if (score <= 12) {
+    badge.className = 'score-badge alto'; badge.textContent = 'Señales de alerta alta';
+    action.textContent = 'Notificación inmediata a orientación y familia';
+  } else {
+    badge.className = 'score-badge extremo'; badge.textContent = '⚠ ALERTA MÁXIMA';
+    action.textContent = 'Activar protocolo de crisis — no dejar al alumno solo';
+  }
+}
+
+function saveStudentNote() {
+  const id = document.getElementById('student-id').value.trim();
+  const group = document.getElementById('student-group').value.trim();
+  const obs = document.getElementById('student-obs').value.trim();
+  if (!obs) { alert('Escribe las observaciones.'); return; }
+  studentNotes.unshift({ id: id||'Anónimo', group, obs, date: new Date().toLocaleDateString('es-MX'), ts: Date.now() });
+  const container = document.getElementById('student-notes-log');
+  container.innerHTML = studentNotes.map(n => `
+    <div class="log-entry">
+      <div class="log-text"><strong>${n.id} ${n.group?'· '+n.group:''}</strong><p>${n.obs.slice(0,100)}${n.obs.length>100?'…':''}</p></div>
+      <span class="log-date">${n.date}</span>
+    </div>`).join('');
+  document.getElementById('student-obs').value = '';
+}
+
 function showNoWordCloud() {
   const canvas = document.getElementById('wordcloud-canvas');
   if (!canvas) return;
@@ -2042,7 +2684,7 @@ function openChat() {
 }
 
 function goBackFromChat() {
-  // Show resources modal before leaving
+  stopTTS(); // stop any ongoing speech before showing modal
   const modal = document.getElementById('exit-modal');
   modal.style.display = 'flex';
 }
@@ -2060,6 +2702,7 @@ function confirmExit() {
 
 function nuevaConversacion() {
   if (!confirm('¿Iniciar una nueva conversación? El historial actual se borrará.')) return;
+  stopTTS();
   document.getElementById('chat-messages').innerHTML = '';
   chatHistory = [];
   pendingFiles = [];
@@ -2118,6 +2761,9 @@ function appendMessage(role, text, fileInfo) {
     + '<span class="msg-time">' + timeStr + '</span></div>';
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
+
+  // Speak AI responses if TTS is enabled
+  if (role === 'ai') speakText(text);
 }
 
 function appendTyping() {
@@ -2195,6 +2841,165 @@ async function callGroq(messages) {
     return { ok: false, error: 'Error de red: ' + e.message };
   }
 }
+
+
+// ══════════════════════════════════════════════
+// VOZ — GROQ WHISPER (STT) + WEB SPEECH (TTS)
+// ══════════════════════════════════════════════
+
+let mediaRecorder  = null;
+let audioChunks    = [];
+let isRecording    = false;
+let ttsEnabled     = false;
+let currentUtterance = null;
+const WHISPER_URL  = 'https://api.groq.com/openai/v1/audio/transcriptions';
+const WHISPER_MODEL = 'whisper-large-v3-turbo';
+
+// ── Mic button toggle ─────────────────────────
+async function toggleVoiceInput() {
+  if (isRecording) {
+    stopRecording();
+    return;
+  }
+  await startRecording();
+}
+
+async function startRecording() {
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    const msgs = {
+      NotAllowedError:  'Permiso de micrófono denegado. Habilítalo en la barra del navegador.',
+      NotFoundError:    'No se encontró ningún micrófono en este dispositivo.',
+      NotReadableError: 'El micrófono está siendo usado por otra aplicación.',
+    };
+    appendMessage('ai', '⚠️ ' + (msgs[err.name] || 'No se pudo acceder al micrófono: ' + err.message));
+    return;
+  }
+
+  // Pick best supported format
+  const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4']
+    .find(t => MediaRecorder.isTypeSupported(t)) || '';
+
+  audioChunks = [];
+  mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    transcribeAudio();
+  };
+  mediaRecorder.start(200); // collect chunks every 200 ms
+
+  isRecording = true;
+  document.getElementById('mic-btn').classList.add('recording');
+  document.getElementById('mic-btn').innerHTML = '<i class="fas fa-stop"></i>';
+  document.getElementById('voice-status').classList.add('active');
+  document.getElementById('voice-interim').textContent = 'Grabando…';
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  isRecording = false;
+  document.getElementById('mic-btn').classList.remove('recording');
+  document.getElementById('mic-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+  document.getElementById('voice-status').classList.remove('active');
+  document.getElementById('voice-interim').textContent = '';
+}
+
+async function transcribeAudio() {
+  // Show processing state
+  document.getElementById('voice-status').classList.add('active');
+  document.getElementById('voice-interim').textContent = 'Procesando…';
+  document.getElementById('mic-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  document.getElementById('mic-btn').disabled = true;
+
+  try {
+    const mimeType = audioChunks[0]?.type || 'audio/webm';
+    const ext      = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob     = new Blob(audioChunks, { type: mimeType });
+
+    if (blob.size < 1000) throw new Error('Grabación muy corta o silenciosa. Inténtalo de nuevo.');
+
+    const form = new FormData();
+    form.append('file', blob, 'audio.' + ext);
+    form.append('model', WHISPER_MODEL);
+    form.append('language', 'es');
+    form.append('response_format', 'json');
+
+    const res  = await fetch(WHISPER_URL, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + GROQ_KEY },
+      body: form
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || JSON.stringify(data));
+
+    const transcript = (data.text || '').trim();
+    if (!transcript) throw new Error('No se detectó voz. Inténtalo de nuevo.');
+
+    const input = document.getElementById('chat-input');
+    input.value = transcript;
+    autoResize(input);
+    updateCharCount(input);
+    // Auto-send
+    sendMessage();
+
+  } catch (err) {
+    appendMessage('ai', '⚠️ ' + err.message);
+  } finally {
+    document.getElementById('voice-status').classList.remove('active');
+    document.getElementById('voice-interim').textContent = '';
+    document.getElementById('mic-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+    document.getElementById('mic-btn').disabled = false;
+  }
+}
+
+// ── Text-to-Speech (TTS) ──────────────────────
+function setTTS(enabled) {
+  ttsEnabled = enabled;
+  if (!enabled) stopTTS();
+}
+
+function stopTTS() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  const ind = document.getElementById('tts-indicator');
+  if (ind) ind.classList.remove('active');
+  currentUtterance = null;
+}
+
+function speakText(text) {
+  if (!ttsEnabled || !window.speechSynthesis) return;
+  stopTTS();
+
+  const clean = text
+    .replace(/<[^>]+>/g, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\n/g, ' ')
+    .replace(/800 290-0024|55 5259-8121|800 222-2268/g, '')
+    .trim();
+  if (!clean) return;
+
+  const utter    = new SpeechSynthesisUtterance(clean);
+  utter.lang     = 'es-MX';
+  utter.rate     = 0.95;
+  utter.pitch    = 1.05;
+
+  const voices   = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    v.lang === 'es-MX' || (v.lang.startsWith('es') && !v.name.toLowerCase().includes('male'))
+  ) || voices.find(v => v.lang.startsWith('es'));
+  if (preferred) utter.voice = preferred;
+
+  utter.onstart = () => { const i=document.getElementById('tts-indicator'); if(i) i.classList.add('active'); };
+  utter.onend   = () => { const i=document.getElementById('tts-indicator'); if(i) i.classList.remove('active'); };
+  utter.onerror = () => { const i=document.getElementById('tts-indicator'); if(i) i.classList.remove('active'); };
+
+  currentUtterance = utter;
+  window.speechSynthesis.speak(utter);
+}
+
+if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => {};
 
 async function sendMessage() {
   const input = document.getElementById('chat-input');
