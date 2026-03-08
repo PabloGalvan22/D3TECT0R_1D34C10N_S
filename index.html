@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Espacio de Apoyo — Contigo Siempre</title>
+<title>SentinelCareAI — Contigo Siempre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1148,7 +1148,7 @@ body.dark-mode .chat-btn-mic { background: var(--warm-white); border-color: var(
   <div class="landing-card">
     <div class="logo-mark"><i class="fas fa-heart"></i></div>
 
-    <h1 class="landing-title">Espacio de <span>Apoyo</span></h1>
+    <h1 class="landing-title">Sentinel<span>CareAI</span></h1>
     <p class="landing-subtitle">
       Un lugar para hablar, escuchar y encontrar el primer paso hacia el bienestar.
       Aquí no estás sol@ — hay personas capacitadas esperando ayudarte.
@@ -1156,7 +1156,7 @@ body.dark-mode .chat-btn-mic { background: var(--warm-white); border-color: var(
 
     <hr class="divider">
 
-    <p class="choose-label">¿Cómo me identifico hoy?</p>
+    <p class="choose-label">Elige el perfil que mas se asemeje a ti</p>
 
     <div class="profile-grid">
       <div class="profile-card joven" onclick="enterApp('joven')">
@@ -1202,7 +1202,7 @@ body.dark-mode .chat-btn-mic { background: var(--warm-white); border-color: var(
   <header class="app-header">
     <div class="header-brand">
       <div class="header-dot"><i class="fas fa-heart"></i></div>
-      Espacio de Apoyo
+      SentinelCareAI
     </div>
     <span class="header-badge" id="personal-badge">Joven</span>
     <div style="display:flex;gap:8px;align-items:center;">
@@ -2653,11 +2653,18 @@ function showNoWordCloud() {
 // ══════════════════════════════════════════════
 const GROQ_KEY = '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';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.1-8b-instant';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-const SYSTEM_PROMPT = `Eres un asistente de apoyo emocional llamado "Aura", parte de "Espacio de Apoyo". Tu misión es ofrecer compañía empática y cálida, como un amigo que escucha sin juzgar. Tu prioridad es que la persona se sienta comprendida y validada.
+const SYSTEM_PROMPT = `Eres un asistente de apoyo emocional llamado "Aura", parte de "SentinelCareAI". Tu misión es ofrecer compañía empática y cálida, como un amigo que escucha sin juzgar. Tu prioridad es que la persona se sienta comprendida y validada.
 
-Pautas:
+MEMORIA Y COHERENCIA — MUY IMPORTANTE:
+- Lee SIEMPRE todo el historial de conversación antes de responder.
+- Si la persona ya te contó algo (un problema, una situación, un nombre, una emoción), RECUÉRDALO y úsalo. Por ejemplo: "Antes mencionaste que…" o "Sobre lo que me contabas de tu mamá…".
+- NUNCA repitas preguntas que ya fueron respondidas.
+- NUNCA cambies de tema abruptamente ni olvides lo que se habló.
+- Mantén una narrativa continua: cada respuesta tuya debe conectarse con lo anterior.
+
+Pautas de tono:
 - Habla con calidez, usando un tono cercano y humano. Evita frases frías o robóticas.
 - Refleja y valida las emociones que la persona expresa. Por ejemplo: "Eso suena muy difícil, entiendo que te sientas así".
 - No hagas muchas preguntas; en lugar de eso, invita a compartir más si la persona lo desea, pero sin presionar. Frases como "Si quieres contarme más, estoy aquí para escucharte" son suficientes.
@@ -2828,7 +2835,7 @@ async function callGroq(messages) {
     const response = await fetch(GROQ_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
-      body: JSON.stringify({ model: GROQ_MODEL, messages: messages, temperature: 0.85, max_tokens: 600 })
+      body: JSON.stringify({ model: GROQ_MODEL, messages: messages, temperature: 0.65, max_tokens: 600 })
     });
     const data = await response.json();
     if (!response.ok) {
