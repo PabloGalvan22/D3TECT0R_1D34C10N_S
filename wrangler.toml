@@ -1,0 +1,10 @@
+name = "sentinel-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# La API key se agrega como secret (NUNCA en este archivo):
+#   wrangler secret put GROQ_API_KEY
+#
+# Variables de entorno NO sensibles (opcionales):
+# [vars]
+# APP_ENV = "production"
