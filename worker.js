@@ -1,36 +1,85 @@
 /**
  * SentinelCareAI — Cloudflare Worker Proxy
  * ─────────────────────────────────────────
- * Actúa como intermediario entre el frontend y la API de Groq.
- * La API key NUNCA llega al navegador — vive aquí como variable de entorno.
+ * Intermediario seguro entre el frontend y la API de Groq.
+ * La API key NUNCA llega al navegador.
  *
  * ENDPOINTS:
  *   POST /chat        → Groq chat completions (Llama / Aura)
  *   POST /transcribe  → Groq Whisper transcription (voz)
  *
- * DESPLIEGUE:
- *   1. Instala Wrangler: npm install -g wrangler
- *   2. Inicia sesión:    wrangler login
- *   3. Agrega tu key:    wrangler secret put GROQ_API_KEY
- *      (pega la key cuando la pida — ej: gsk_xxxx...)
- *   4. Despliega:        wrangler deploy
- *   5. Copia la URL que te da Wrangler (ej: https://sentinel-proxy.TU-USUARIO.workers.dev)
- *   6. Pégala en SentinelAI_v26.html como valor de PROXY_BASE_URL
- *
- * CORS: Solo acepta peticiones desde los dominios listados en ALLOWED_ORIGINS.
- *       Agrega el tuyo si despliegas el HTML en un dominio propio.
+ * RATE LIMITING (en memoria, por IP):
+ *   - Máx. 30 requests por minuto por IP  (ventana deslizante)
+ *   - Máx. 500 requests por día  por IP
+ *   Se resetea automáticamente al expirar la ventana.
+ *   Nota: al ser en memoria, se resetea si el worker se reinicia.
+ *   Para persistencia total se necesitaría Cloudflare KV (plan pago).
  */
 
-// ── Dominios autorizados a usar este proxy ────────────────
+// ── Dominios autorizados ──────────────────────────────────
 const ALLOWED_ORIGINS = [
   'http://localhost',
   'http://127.0.0.1',
-  'null',                                          // file:// local (abrir el HTML directo)
-  'https://pablogalvan22.github.io',               // GitHub Pages
+  'null',                              // file:// local
+  'https://pablogalvan22.github.io',   // GitHub Pages
 ];
 
-const GROQ_CHAT_URL      = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_CHAT_URL       = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_TRANSCRIBE_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
+
+// ── Rate limit config ─────────────────────────────────────
+const RL_WINDOW_MS   = 60 * 1000;   // ventana de 1 minuto
+const RL_MAX_MINUTE  = 30;           // máx requests por minuto
+const RL_MAX_DAY     = 500;          // máx requests por día
+const RL_DAY_MS      = 24 * 3600 * 1000;
+
+// Almacenamiento en memoria (vive mientras el worker esté activo)
+// Map<ip, { minuteCount, minuteStart, dayCount, dayStart }>
+const rateLimitStore = new Map();
+
+function checkRateLimit(ip) {
+  const now  = Date.now();
+  let entry  = rateLimitStore.get(ip);
+
+  if (!entry) {
+    entry = { minuteCount: 0, minuteStart: now, dayCount: 0, dayStart: now };
+    rateLimitStore.set(ip, entry);
+  }
+
+  // Reset ventana de minuto si expiró
+  if (now - entry.minuteStart > RL_WINDOW_MS) {
+    entry.minuteCount = 0;
+    entry.minuteStart = now;
+  }
+
+  // Reset ventana de día si expiró
+  if (now - entry.dayStart > RL_DAY_MS) {
+    entry.dayCount = 0;
+    entry.dayStart = now;
+  }
+
+  entry.minuteCount++;
+  entry.dayCount++;
+
+  // Limpiar IPs inactivas para no acumular memoria indefinidamente
+  if (rateLimitStore.size > 5000) {
+    for (const [key, val] of rateLimitStore) {
+      if (now - val.minuteStart > RL_WINDOW_MS * 2) rateLimitStore.delete(key);
+    }
+  }
+
+  if (entry.minuteCount > RL_MAX_MINUTE) {
+    const retryAfter = Math.ceil((entry.minuteStart + RL_WINDOW_MS - now) / 1000);
+    return { blocked: true, reason: `Demasiadas peticiones. Intenta de nuevo en ${retryAfter}s.`, retryAfter };
+  }
+
+  if (entry.dayCount > RL_MAX_DAY) {
+    const retryAfter = Math.ceil((entry.dayStart + RL_DAY_MS - now) / 1000);
+    return { blocked: true, reason: 'Límite diario alcanzado. Intenta mañana.', retryAfter };
+  }
+
+  return { blocked: false };
+}
 
 // ── Helpers CORS ──────────────────────────────────────────
 function corsHeaders(origin) {
@@ -43,15 +92,15 @@ function corsHeaders(origin) {
   };
 }
 
-function jsonResponse(body, status = 200, origin = '*') {
+function jsonResponse(body, status = 200, origin = '*', extra = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin), ...extra },
   });
 }
 
-function errorResponse(message, status, origin) {
-  return jsonResponse({ error: { message } }, status, origin);
+function errorResponse(message, status, origin, extra = {}) {
+  return jsonResponse({ error: { message } }, status, origin, extra);
 }
 
 // ── Main handler ──────────────────────────────────────────
@@ -70,15 +119,28 @@ export default {
       return errorResponse('Método no permitido', 405, origin);
     }
 
-    // Verificar que la API key está configurada
+    // API key configurada
     if (!env.GROQ_API_KEY) {
       console.error('GROQ_API_KEY secret not set');
       return errorResponse('Proxy mal configurado — falta GROQ_API_KEY', 500, origin);
     }
 
+    // ── Rate limiting ─────────────────────────────────────
+    const ip = request.headers.get('CF-Connecting-IP')
+            || request.headers.get('X-Forwarded-For')?.split(',')[0].trim()
+            || 'unknown';
+
+    const rl = checkRateLimit(ip);
+    if (rl.blocked) {
+      console.warn(`Rate limit hit: ${ip} — ${rl.reason}`);
+      return errorResponse(rl.reason, 429, origin, {
+        'Retry-After': String(rl.retryAfter),
+      });
+    }
+
     const authHeader = { 'Authorization': 'Bearer ' + env.GROQ_API_KEY };
 
-    // ── /chat — reenvía a Groq chat completions ──────────
+    // ── /chat ─────────────────────────────────────────────
     if (url.pathname === '/chat') {
       let body;
       try {
@@ -97,7 +159,7 @@ export default {
       return jsonResponse(data, groqRes.status, origin);
     }
 
-    // ── /transcribe — reenvía a Groq Whisper ─────────────
+    // ── /transcribe ───────────────────────────────────────
     if (url.pathname === '/transcribe') {
       let formData;
       try {
@@ -108,7 +170,7 @@ export default {
 
       const groqRes = await fetch(GROQ_TRANSCRIBE_URL, {
         method:  'POST',
-        headers: authHeader,   // Content-Type lo pone el browser automáticamente con el boundary
+        headers: authHeader,
         body:    formData,
       });
 
@@ -116,7 +178,6 @@ export default {
       return jsonResponse(data, groqRes.status, origin);
     }
 
-    // Ruta no encontrada
     return errorResponse('Ruta no encontrada. Usa /chat o /transcribe', 404, origin);
   },
 };
