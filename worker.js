@@ -25,8 +25,8 @@
 const ALLOWED_ORIGINS = [
   'http://localhost',
   'http://127.0.0.1',
-  'null',                    // file:// local (abrir el HTML directo)
-  // 'https://tu-dominio.com', // ← agrega aquí tu dominio si despliegas el HTML
+  'null',                                          // file:// local (abrir el HTML directo)
+  'https://pablogalvan22.github.io',               // GitHub Pages
 ];
 
 const GROQ_CHAT_URL      = 'https://api.groq.com/openai/v1/chat/completions';
