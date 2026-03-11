@@ -4751,21 +4751,42 @@ function renderFilePreviews() {
 
 function removeFile(idx) { pendingFiles.splice(idx, 1); renderFilePreviews(); }
 
-async function callGroq(messages) {
+async function callGroq(messages, _attempt = 1) {
+  const MAX_ATTEMPTS = 3;
+  const RETRY_DELAYS = [0, 1500, 3000]; // ms antes de cada intento
+
   try {
+    if (_attempt > 1) {
+      await new Promise(r => setTimeout(r, RETRY_DELAYS[_attempt - 1]));
+    }
+
     const response = await fetch(GROQ_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: GROQ_MODEL, messages: messages, temperature: 0.65, max_tokens: 600 })
     });
     const data = await response.json();
+
+    // Reintentar en errores de servidor (5xx) o rate limit (429)
     if (!response.ok) {
       const msg = (data.error && data.error.message) ? data.error.message : JSON.stringify(data);
+      const isRetryable = response.status === 429 || response.status >= 500;
+      if (isRetryable && _attempt < MAX_ATTEMPTS) {
+        console.warn(`Groq error ${response.status}, reintentando (${_attempt}/${MAX_ATTEMPTS})…`);
+        return callGroq(messages, _attempt + 1);
+      }
       return { ok: false, error: 'HTTP ' + response.status + ': ' + msg };
     }
+
     const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     return text ? { ok: true, text: text } : { ok: false, error: 'Respuesta vacía: ' + JSON.stringify(data) };
+
   } catch (e) {
+    // Reintentar en errores de red (timeout, conexión perdida)
+    if (_attempt < MAX_ATTEMPTS) {
+      console.warn(`Error de red, reintentando (${_attempt}/${MAX_ATTEMPTS})…`);
+      return callGroq(messages, _attempt + 1);
+    }
     return { ok: false, error: 'Error de red: ' + e.message };
   }
 }
