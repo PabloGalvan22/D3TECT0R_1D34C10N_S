@@ -1599,6 +1599,104 @@ body.dark-mode #panic-btn { box-shadow: 0 8px 32px rgba(192,57,43,0.65), 0 0 0 0
 body.dark-mode .session-restore-bar  { background: rgba(61,122,138,0.1); border-color: rgba(61,122,138,0.22); }
 body.dark-mode .session-saved-pill   { background: rgba(107,143,113,0.15); }
 
+/* ─── BOTÓN GUARDAR SESIÓN ───────────────────── */
+.btn-save-session {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none;
+  border: 1.5px solid rgba(107,143,113,0.45);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.78rem; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--sage);
+  cursor: pointer;
+  transition: all 0.22s;
+  white-space: nowrap;
+}
+.btn-save-session:hover {
+  background: rgba(107,143,113,0.1);
+  border-color: var(--sage);
+}
+.btn-save-session i { font-size: 0.72rem; }
+body.dark-mode .btn-save-session { border-color: rgba(107,143,113,0.35); }
+
+/* ─── MODAL DE CONSENTIMIENTO PARA GUARDAR ──── */
+#save-consent-modal {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 9500;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 20px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+#save-consent-modal.open { display: flex; }
+.save-consent-sheet {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 22px 22px 18px 18px;
+  padding: 28px 28px 24px;
+  max-width: 420px;
+  width: calc(100% - 32px);
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+  animation: slideUp 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes slideUp {
+  from { transform: translateY(32px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.save-consent-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(107,143,113,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--sage);
+  margin: 0 auto 16px;
+}
+.save-consent-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--text-dark);
+  text-align: center; margin-bottom: 10px;
+}
+.save-consent-body {
+  font-size: 0.84rem; color: var(--text-mid);
+  line-height: 1.65; text-align: center;
+  margin-bottom: 20px;
+}
+.save-consent-body strong { color: var(--text-dark); }
+.save-consent-warning {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: rgba(200,151,74,0.08);
+  border: 1px solid rgba(200,151,74,0.22);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.8rem; color: var(--text-mid);
+  line-height: 1.5; margin-bottom: 20px;
+}
+.save-consent-warning i { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+.save-consent-actions { display: flex; gap: 10px; }
+.save-consent-actions button {
+  flex: 1; border-radius: 12px;
+  padding: 11px 16px;
+  font-size: 0.9rem; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+}
+.save-consent-cancel {
+  background: none;
+  border: 1.5px solid var(--border);
+  color: var(--text-mid);
+}
+.save-consent-cancel:hover { border-color: var(--teal); color: var(--teal); }
+.save-consent-confirm {
+  background: linear-gradient(135deg, var(--sage), var(--teal));
+  border: none; color: white;
+  box-shadow: 0 4px 14px rgba(61,122,138,0.3);
+}
+.save-consent-confirm:hover { box-shadow: 0 6px 20px rgba(61,122,138,0.45); transform: translateY(-1px); }
+
 /* ─── SCREEN 4: CHAT ───────────────────────────── */
 #s-chat {
   flex-direction: column;
@@ -2835,6 +2933,9 @@ body.dark-mode .msg-bubble .md-body code { background: rgba(0,212,255,0.1); }
       <span class="session-saved-pill" id="session-saved-pill" style="display:none;">
         <i class="fas fa-floppy-disk"></i> Guardado
       </span>
+      <button class="btn-save-session" id="btn-save-session" onclick="openSaveConsentModal()" title="Guardar conversación para retomar después" style="display:none;">
+        <i class="fas fa-bookmark"></i> Guardar
+      </button>
       <button class="btn-back" onclick="nuevaConversacion()" title="Nueva conversación" style="border-color:var(--sage);color:var(--sage);">
         <i class="fas fa-rotate-right"></i> Nueva
       </button>
@@ -4459,12 +4560,23 @@ let chatHistory = [];
 let pendingFiles = [];
 
 // ══════════════════════════════════════════════
-// PERSISTENCIA DE SESIÓN DE CHAT — localStorage
+// PERSISTENCIA DE SESIÓN DE CHAT
+// ──────────────────────────────────────────────
+// DISEÑO DE PRIVACIDAD:
+//   • El historial NO se guarda automáticamente.
+//   • Solo se persiste en localStorage cuando el usuario pulsa
+//     "Guardar" y acepta el modal de consentimiento.
+//   • localStorage sobrevive al cierre del navegador (útil para
+//     retomar la conversación), pero el usuario es informado
+//     antes de que se escriba cualquier dato.
+//   • Para borrar: botón "Nueva conversación" o cierre del modal
+//     de salida. El borrado es inmediato e irrevocable.
 // ══════════════════════════════════════════════
 const CHAT_STORAGE_KEY  = 'sentinelChatSession';
-const CHAT_MAX_DAYS     = 7;   // auto-expire after 7 days of inactivity
-const CHAT_MAX_MESSAGES = 30;  // cap stored messages
+const CHAT_MAX_DAYS     = 7;   // auto-expire tras 7 días sin abrir
+const CHAT_MAX_MESSAGES = 30;  // máx mensajes almacenados
 
+// Llamada SOLO desde confirmSaveSession() — nunca automáticamente
 function saveChatSession() {
   if (!chatHistory.length) return;
   try {
@@ -4483,7 +4595,6 @@ function loadChatSession() {
     const raw = localStorage.getItem(CHAT_STORAGE_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw);
-    // Auto-expire
     const savedAt = new Date(data.savedAt);
     const ageMs   = Date.now() - savedAt.getTime();
     if (ageMs > CHAT_MAX_DAYS * 24 * 3600 * 1000) {
@@ -4496,6 +4607,27 @@ function loadChatSession() {
 
 function clearChatSession() {
   localStorage.removeItem(CHAT_STORAGE_KEY);
+}
+
+// ── Modal de consentimiento ────────────────────
+function openSaveConsentModal() {
+  if (!chatHistory.length) return;
+  document.getElementById('save-consent-modal').classList.add('open');
+}
+
+function closeSaveConsentModal() {
+  document.getElementById('save-consent-modal').classList.remove('open');
+}
+
+function confirmSaveSession() {
+  closeSaveConsentModal();
+  saveChatSession();
+}
+
+// ── Mostrar/ocultar botón Guardar según haya mensajes ──
+function updateSaveButton() {
+  const btn = document.getElementById('btn-save-session');
+  if (btn) btn.style.display = chatHistory.length > 1 ? 'inline-flex' : 'none';
 }
 
 function flashSavedPill() {
@@ -4607,8 +4739,10 @@ function limpiarYReiniciar() {
   // Hide UI elements
   const bar  = document.getElementById('session-restore-bar');
   const pill = document.getElementById('session-saved-pill');
-  if (bar)  bar.style.display  = 'none';
-  if (pill) pill.style.display = 'none';
+  const saveBtn = document.getElementById('btn-save-session');
+  if (bar)     bar.style.display     = 'none';
+  if (pill)    pill.style.display    = 'none';
+  if (saveBtn) saveBtn.style.display = 'none';
   initChat();
 }
 
@@ -4716,15 +4850,15 @@ function appendMessage(role, text, fileInfo) {
   // Speak AI responses if TTS is enabled
   if (role === 'ai') speakText(text);
 
-  // ── Persist to localStorage (skip file attachments — too heavy) ──
+  // ── Anotar timestamp en el historial en memoria ──
+  // (para que esté disponible si el usuario decide guardar manualmente)
   if (role === 'user' || role === 'ai') {
-    // Update chatHistory entry with timestamp for storage
-    // (history is pushed before appendMessage for user, after for ai — we annotate the last entry)
     const lastEntry = chatHistory[chatHistory.length - 1];
     if (lastEntry && lastEntry.role === role && !lastEntry.time) {
       lastEntry.time = timeStr;
     }
-    saveChatSession();
+    // Mostrar el botón Guardar en cuanto hay mensajes suficientes
+    updateSaveButton();
   }
 }
 
@@ -5201,24 +5335,62 @@ async function sendMessage() {
 </div>
 
 <!-- ══════════════════════════════════════════════
+     MODAL: CONSENTIMIENTO PARA GUARDAR SESIÓN
+══════════════════════════════════════════════ -->
+<div id="save-consent-modal" role="dialog" aria-modal="true" aria-labelledby="save-consent-title-el"
+     onclick="if(event.target===this) closeSaveConsentModal()">
+  <div class="save-consent-sheet">
+    <div class="save-consent-icon"><i class="fas fa-bookmark"></i></div>
+    <div class="save-consent-title" id="save-consent-title-el">¿Guardar esta conversación?</div>
+    <div class="save-consent-body">
+      La conversación se guardará <strong>localmente en este dispositivo</strong>,
+      en el almacenamiento del navegador. Podrás retomar donde lo dejaste la próxima vez
+      que abras la aplicación.
+    </div>
+    <div class="save-consent-warning">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>Si compartes este dispositivo con otras personas, ellas podrían ver
+      el historial. Bórralo cuando ya no lo necesites con el botón <em>"Nueva conversación"</em>.</span>
+    </div>
+    <div class="save-consent-actions">
+      <button class="save-consent-cancel" onclick="closeSaveConsentModal()">Cancelar</button>
+      <button class="save-consent-confirm" onclick="confirmSaveSession()">
+        <i class="fas fa-floppy-disk"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
      EXPORTAR CHAT EN PDF
 ══════════════════════════════════════════════ -->
 <script>
+// ── Escapa caracteres HTML para prevenir XSS en el PDF exportado ──
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function exportChatPDF() {
   if (!chatHistory || chatHistory.length === 0) {
     alert('No hay mensajes en la conversación para exportar.');
     return;
   }
   const profileLabels = { joven: 'Joven', adulto: 'Adulto', padre: 'Guía para padres' };
-  const profileLabel  = profileLabels[currentProfile] || 'Usuario';
+  const profileLabel  = escapeHtml(profileLabels[currentProfile] || 'Usuario');
   const fecha = new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   const hora  = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', hour12: true });
 
   const rows = chatHistory.map(m => {
     const isUser = m.role === 'user';
     const quien  = isUser ? '🧑 Tú' : '💚 Aura';
-    const time   = m.time ? `<span class="pdf-time">${m.time}</span>` : '';
-    const texto  = (m.text || m.content || '')
+    const time   = m.time ? `<span class="pdf-time">${escapeHtml(m.time)}</span>` : '';
+    // Escapar primero, luego aplicar solo el markdown permitido (bold/italic/saltos)
+    const texto  = escapeHtml(m.text || m.content || '')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n/g, '<br>');
@@ -5280,7 +5452,17 @@ ${rows}
      PWA — SERVICE WORKER + BANNER DE INSTALACIÓN
 ══════════════════════════════════════════════ -->
 <script>
-if ('serviceWorker' in navigator) {
+// Dominios donde el SW y sw.js existen realmente.
+// En previews (Claude, StackBlitz, CodePen, etc.) se omite el registro
+// para evitar errores 404 que no son accionables por el usuario.
+const SW_ALLOWED_HOSTS = [
+  'pablogalvan22.github.io',
+  'localhost',
+  '127.0.0.1',
+];
+const _swHostAllowed = SW_ALLOWED_HOSTS.some(h => location.hostname === h || location.hostname.endsWith('.' + h));
+
+if ('serviceWorker' in navigator && _swHostAllowed) {
   window.addEventListener('load', () => {
     // Ruta relativa — funciona tanto en local como en GitHub Pages
     navigator.serviceWorker.register('./sw.js')

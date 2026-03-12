@@ -18,8 +18,9 @@
 
 // ── Dominios autorizados ──────────────────────────────────
 const ALLOWED_ORIGINS = [
-  'http://localhost',
-  'http://127.0.0.1',
+  'http://localhost', 
+  'http://127.0.0.1:5500', // puerto común para live server, pero se permite cualquier puerto en localhost
+  'http://127.0.0.1', 
   'null',                              // file:// local
   'https://pablogalvan22.github.io',   // GitHub Pages
 ];
@@ -83,12 +84,17 @@ function checkRateLimit(ip) {
 
 // ── Helpers CORS ──────────────────────────────────────────
 function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  // Si el origen no está en la lista autorizada no se devuelve ningún header
+  // Access-Control-Allow-Origin. El navegador bloqueará la respuesta por CORS.
+  // Nota: no lanzamos un error aquí — el worker responde normalmente, pero sin
+  // el header CORS el navegador descartará la respuesta en dominios no autorizados.
+  if (!ALLOWED_ORIGINS.includes(origin)) return {};
   return {
-    'Access-Control-Allow-Origin':  allowed,
+    'Access-Control-Allow-Origin':  origin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age':       '86400',
+    'Vary':                         'Origin',   // necesario para cachés correctas
   };
 }
 
