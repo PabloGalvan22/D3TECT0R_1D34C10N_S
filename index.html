@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SentinelCareAI — Contigo Siempre</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -115,6 +115,7 @@ body {
   background: var(--cream);
   color: var(--text-dark);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
 }
 
@@ -885,8 +886,8 @@ body.dark-mode #s-padres {
 .wordcloud-wrapper { width:100%; height:320px; background:rgba(0,0,0,0.2); border-radius:10px; overflow:hidden; }
 #wordcloud-canvas { width:100%; height:100%; }
 
-.pro-table-wrap { overflow-x:auto; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.3); max-height:500px; overflow-y:auto; }
-table { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); }
+.pro-table-wrap { overflow-x:auto; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.3); max-height:500px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+table { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); min-width: 580px; }
 th { background:rgba(0,212,255,0.12); color:#00d4ff; padding:13px 15px; font-weight:600; position:sticky; top:0; backdrop-filter:blur(10px); font-size:0.9rem; }
 td { padding:11px 15px; border-bottom:1px solid rgba(0,212,255,0.12); font-size:0.88rem; }
 
@@ -1701,6 +1702,7 @@ body.dark-mode .btn-save-session { border-color: rgba(107,143,113,0.35); }
 #s-chat {
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* dynamic viewport height — moderno */
   overflow: hidden;
 }
 
@@ -1993,91 +1995,166 @@ body.dark-mode .chat-btn-mic { background: var(--warm-white); border-color: var(
 
 #chat-file-input { display:none; }
 
-@media(max-width:640px){
-  .chat-wrapper { padding: 0 12px 16px; }
-  .msg-bubble { max-width: 88%; }
-  .chat-cta { flex-direction:column; text-align:center; }
-  .chat-cta-arrow { display:none; }
-}
-
-/* ─── MEJORAS MÓVILES GENERALES ─────────────── */
+/* ─── MEJORAS MÓVILES GENERALES — 640px ──────── */
 @media(max-width:640px){
 
-  /* Landing */
-  .landing-card { padding: 28px 18px 32px; border-radius: 24px; }
-  .landing-title { font-size: 2rem; }
-  .landing-subtitle { font-size: 0.88rem; }
-  .profile-btn { padding: 14px 16px; font-size: 0.88rem; }
-  .profile-icon { width: 42px; height: 42px; font-size: 1.1rem; }
+  /* ── Landing ── */
+  #s-landing { padding: 16px 14px 24px; justify-content: flex-start; padding-top: 32px; }
+  .landing-card { padding: 28px 20px 32px; border-radius: 22px; }
+  .landing-title { font-size: 1.9rem; }
+  .landing-subtitle { font-size: 0.88rem; margin-bottom: 28px; }
+  .logo-mark { width: 58px; height: 58px; font-size: 22px; margin-bottom: 18px; }
+  .divider { margin: 22px 0; }
 
-  /* App header en móvil */
-  .app-header { padding: 0 12px; height: 56px; }
-  .app-header h2 { font-size: 0.88rem; }
-  .header-dot { width: 30px; height: 30px; font-size: 0.8rem; }
-
-  /* Chat — input más accesible */
-  .chat-input-area { border-radius: 18px; padding: 10px 12px; }
-  #chat-input { font-size: 16px; } /* 16px evita zoom automático en iOS */
-  .chat-btn { width: 38px; height: 38px; font-size: 15px; }
-
-  /* Mensajes */
-  .msg-bubble { font-size: 0.9rem; padding: 11px 14px; border-radius: 18px; }
-  .msg-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
-
-  /* Panel profesional — tabs con scroll horizontal */
-  .pro-container { padding: 14px 12px; }
-  .pro-tab-bar {
-    gap: 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 4px;
-    flex-wrap: nowrap;
+  /* Profile grid: 2 cols siempre en >=360, pero la última sola queda centrada */
+  .profile-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
   }
-  .pro-tab-bar::-webkit-scrollbar { display: none; }
-  .pro-tab-btn { padding: 8px 12px; font-size: 0.78rem; white-space: nowrap; flex-shrink: 0; }
+  /* Centrar última tarjeta si es la quinta (impar) */
+  .profile-grid .profile-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: 260px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .profile-card { padding: 20px 14px; border-radius: 16px; }
+  .profile-icon { width: 44px; height: 44px; font-size: 1.1rem; margin-bottom: 10px; }
+  .profile-name { font-size: 0.95rem; }
+  .profile-desc { font-size: 0.78rem; }
+  .notice-box { font-size: 0.82rem; padding: 14px 16px; }
+
+  /* ── App Header ── */
+  .app-header { padding: 0 14px; height: 56px; gap: 8px; }
+  .header-brand { font-size: 0.95rem; gap: 8px; }
+  .header-dot { width: 28px; height: 28px; font-size: 12px; }
+  .header-badge { font-size: 0.7rem; padding: 3px 10px; }
+  .btn-back { padding: 6px 10px; font-size: 0.8rem; }
+  .dark-toggle { width: 34px; height: 34px; font-size: 13px; }
+
+  /* ── Personal / Padres hero ── */
+  .personal-hero { padding: 28px 0 0; }
+  .personal-hero h2 { font-size: 1.55rem; }
+  .personal-hero p, .padres-hero p { font-size: 0.9rem; }
+  .personal-content, .padres-content { padding: 0 14px; margin-top: 24px; }
+  #s-personal, #s-padres { padding-bottom: 80px; }
+
+  /* ── Chat CTA ── */
+  .chat-cta { flex-direction: column; text-align: center; padding: 22px 18px; gap: 14px; }
+  .chat-cta-arrow { display: none; }
+  .chat-cta-text h4 { font-size: 1rem; }
+  .chat-cta-text p { font-size: 0.82rem; }
+
+  /* ── Crisis banner — colapsa verticalmente ── */
+  .crisis-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px 18px;
+  }
+  .crisis-banner i { font-size: 1.4rem; }
+  .crisis-phone { margin-left: 0; font-size: 1.1rem; }
+
+  /* ── Step cards ── */
+  .step-card { padding: 22px 18px; border-radius: 18px; margin-bottom: 18px; }
+  .step-title { font-size: 1.05rem; }
+
+  /* ── Why grid — 1 columna ── */
+  .why-grid { grid-template-columns: 1fr; gap: 10px; }
+  .why-item { padding: 14px; }
+
+  /* ── Resources grid — 1 columna ── */
+  .resources-grid { grid-template-columns: 1fr; gap: 10px; }
+  .resource-card { padding: 16px 14px; }
+  .resource-card .rc-phone { font-size: 1rem; }
+
+  /* ── Courage section ── */
+  .courage-section { padding: 28px 18px; margin-top: 28px; }
+  .courage-section h3 { font-size: 1.3rem; }
+  .btn-primary { padding: 14px 24px; font-size: 0.95rem; width: 100%; justify-content: center; }
+
+  /* ── Chat screen ── */
+  .chat-wrapper { padding: 0 10px 12px; }
+  .msg-bubble { max-width: 88%; font-size: 0.9rem; padding: 11px 14px; }
+  .msg-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
+  .chat-disclaimer { font-size: 0.78rem; padding: 9px 12px; margin: 10px 0 8px; }
+  .chat-input-area { border-radius: 18px; padding: 10px 12px; }
+  #chat-input { font-size: 16px; } /* Evita zoom en iOS */
+  .chat-btn { width: 40px; height: 40px; font-size: 15px; }
+  .chat-btn-mic { width: 40px; height: 40px; }
+  .char-counter { font-size: 0.68rem; }
+  .voice-bar { font-size: 0.72rem; }
+
+  /* ── Wellness tracker ── */
+  .mood-selector { gap: 6px; }
+  .mood-btn { padding: 10px 6px; min-width: 56px; flex: 1 1 56px; }
+  .mood-btn .mood-emoji { font-size: 1.6rem; }
+  .mood-btn span { font-size: 0.72rem; }
+
+  /* ── Padres: alert grid — 1 columna ── */
+  .alert-grid { grid-template-columns: 1fr; gap: 10px; }
+  .guias-grid { grid-template-columns: 1fr; gap: 14px; }
+  .do-dont { grid-template-columns: 1fr; gap: 14px; }
+  .padres-section { padding: 20px 16px; border-radius: 20px; margin-bottom: 20px; }
+  .padres-hero { padding: 28px 0 0; }
+
+  /* ── Chat parent CTA ── */
+  .chat-parent-cta { padding: 18px 20px; gap: 14px; flex-direction: column; text-align: center; }
+  .chat-parent-cta-arrow { display: none; }
+  .chat-parent-cta-icon { margin: 0 auto; }
+
+  /* ── Pro panel ── */
+  .pro-container { padding: 14px 12px; }
+  .pro-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-wrap: nowrap; }
+  .pro-tabs::-webkit-scrollbar { display: none; }
+  .pro-tab { padding: 9px 14px; font-size: 0.82rem; white-space: nowrap; flex-shrink: 0; }
   .pro-charts { grid-template-columns: 1fr; }
   .pro-form-row { grid-template-columns: 1fr; }
   .two-col-grid { grid-template-columns: 1fr !important; }
+  .guidance-grid { grid-template-columns: 1fr; }
   .score-bar { flex-direction: column; gap: 10px; align-items: flex-start; }
   .checklist-card { padding: 18px 14px; }
 
-  /* Pantalla personal / padres */
-  .personal-container, .padres-container { padding: 16px 14px; }
-  .resource-card { padding: 16px 14px; }
+  /* ── Pro access card ── */
+  .pro-access-card { padding: 36px 22px 32px; border-radius: 22px; }
 
-  /* Acceso profesional */
-  .pro-access-card { padding: 36px 24px 32px; border-radius: 22px; }
-
-  /* Mood */
-  .mood-selector { gap: 6px; }
-  .mood-btn { padding: 10px 8px; }
+  /* ── Session restore bar ── */
+  .session-restore-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .session-restore-actions { width: 100%; justify-content: flex-end; }
 }
 
-/* ─── MÓVIL PEQUEÑO — 400px (iPhone SE, Galaxy A) ── */
-@media(max-width:400px){
+/* ─── MÓVIL PEQUEÑO — 390px (iPhone SE, Galaxy A) ── */
+@media(max-width:390px){
 
-  /* Landing: 1 columna */
+  /* Landing: 1 columna absoluta */
+  #s-landing { padding: 20px 10px; }
   .profile-grid { grid-template-columns: 1fr !important; }
-  .landing-title { font-size: 1.75rem; }
-  .landing-card { padding: 24px 14px 28px; }
+  .profile-grid .profile-card:last-child:nth-child(odd) { max-width: 100%; }
+  .landing-title { font-size: 1.65rem; }
+  .landing-card { padding: 22px 14px 26px; }
+  .profile-card { padding: 16px 14px; flex-direction: row; text-align: left; align-items: center; gap: 14px; }
+  .profile-icon { margin: 0; flex-shrink: 0; width: 40px; height: 40px; }
+  .profile-name { font-size: 0.9rem; margin-bottom: 2px; }
+  .profile-desc { font-size: 0.75rem; }
 
-  /* Header compacto */
-  .app-header { padding: 0 10px; }
+  /* Header mínimo */
+  .app-header { padding: 0 10px; height: 52px; }
+  .header-badge { display: none; }
 
   /* Chat */
   .msg-bubble { max-width: 94%; font-size: 0.85rem; padding: 10px 12px; }
+  .chat-wrapper { padding: 0 8px 10px; }
 
-  /* Tabs del panel pro aún más pequeños */
-  .pro-tab-btn { padding: 7px 10px; font-size: 0.74rem; }
-  .pro-container { padding: 10px; }
+  /* Pro */
+  .pro-tab { padding: 8px 10px; font-size: 0.76rem; }
+  .pro-container { padding: 10px 8px; }
 
   /* Botones */
-  .btn-primary { padding: 13px 20px; font-size: 0.95rem; }
+  .btn-primary { padding: 13px 16px; font-size: 0.9rem; }
 }
 
-
-/* Prevenir zoom en inputs iOS sin romper tamaño visual */
+/* ─── Prevenir zoom en inputs iOS ─────────────── */
 @media(max-width:640px){
   input[type="text"],
   input[type="password"],
@@ -2088,7 +2165,143 @@ body.dark-mode .chat-btn-mic { background: var(--warm-white); border-color: var(
   }
 }
 
-/* ─── MARKDOWN RENDERING IN CHAT ─────────────── */
+/* ─── Safe area para iPhone con notch/home bar ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  #s-chat .chat-wrapper { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  #panic-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
+  #s-personal, #s-padres { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+
+/* ─── Touch targets mínimos 44px ─────────────── */
+@media(max-width:640px){
+  .btn-back, .dark-toggle, .chat-btn, .chat-btn-mic,
+  .session-restore-btn, .accordion-header {
+    min-height: 44px;
+  }
+  .profile-card { min-height: 44px; }
+  .accordion-header { padding: 16px 18px; }
+}
+
+/* ─── TWO-COL-GRID (base) ─────────────────────── */
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ─── PRO HEADER — responsive fixes ─────────── */
+#s-professional .app-header {
+  gap: 8px;
+}
+#s-professional .header-brand {
+  min-width: 0;        /* permite que flexbox comprima */
+  flex-shrink: 1;
+}
+.pro-header-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.pro-title-section h1 {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.pro-title-section p {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.pro-info-box, .pro-info-box * {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+/* Texto general en el panel pro no debe desbordar */
+#s-professional * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ─── PRO TITLE SECTION — ajuste móvil ──────── */
+@media(max-width:640px){
+  /* Header del panel pro */
+  .pro-header-badge { display: none; }          /* ocultar badge, el título ya lo dice */
+  .btn-back-label   { display: none; }          /* solo el ícono ← en pantalla chica */
+  .pro-title-section { margin-bottom: 20px; }
+  .pro-title-section h1  { font-size: 1.25rem; text-shadow: none; }
+  .pro-title-section p   { font-size: 0.82rem; line-height: 1.5; }
+
+  /* File uploader más compacto */
+  .file-uploader { padding: 20px 14px; }
+  .file-uploader i { font-size: 1.8rem; }
+  .file-uploader p { font-size: 0.82rem; }
+
+  /* Métricas apiladas */
+  .pro-metrics { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pro-metric-value { font-size: 1.6rem; }
+
+  /* Gráficas en columna */
+  .pro-charts { grid-template-columns: 1fr; gap: 16px; }
+
+  /* Sidebar pro */
+  .pro-sidebar { padding: 18px 14px; }
+  .pro-sidebar h3 { font-size: 0.9rem; }
+  .pro-info-box { font-size: 0.8rem; padding: 12px 14px; }
+
+  /* Score bar */
+  .score-bar { flex-direction: column; gap: 8px; align-items: flex-start; }
+  .score-val  { font-size: 1.5rem; }
+
+  /* Checklist cards */
+  .checklist-card { padding: 16px 12px; }
+  .checklist-card h4 { font-size: 0.85rem; }
+  .check-item label  { font-size: 0.82rem; }
+
+  /* Protocol steps más angostos */
+  .protocol-step { padding: 12px 14px; gap: 10px; }
+  .protocol-step .step-body strong { font-size: 0.85rem; }
+  .protocol-step .step-body p      { font-size: 0.78rem; }
+
+  /* Script boxes */
+  .script-box { padding: 14px; }
+  .script-box p { font-size: 0.82rem; }
+
+  /* two-col-grid colapsa en móvil */
+  .two-col-grid { grid-template-columns: 1fr !important; gap: 10px; }
+
+  /* Log entries */
+  .log-entry { flex-direction: column; gap: 8px; }
+  .log-entry .log-date { margin-left: 0; }
+
+  /* Export buttons — en fila scrollable */
+  .pro-form-actions { flex-wrap: wrap; gap: 8px; }
+  .export-btn { font-size: 0.78rem; padding: 7px 11px; }
+
+  /* Resource chips wrap bien */
+  .resource-chips { gap: 6px; }
+  .resource-chip  { font-size: 0.75rem; padding: 5px 10px; }
+
+  /* Pro tabs barra */
+  .pro-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding-bottom: 0;
+  }
+  .pro-tabs::-webkit-scrollbar { display: none; }
+  .pro-tab { padding: 10px 12px; font-size: 0.8rem; white-space: nowrap; flex-shrink: 0; }
+  .pro-tab i { display: none; } /* ocultar iconos en tabs para ahorrar espacio */
+
+  /* Guidance grid */
+  .guidance-grid { grid-template-columns: 1fr; }
+}
+
+@media(max-width:390px){
+  .pro-metrics { grid-template-columns: 1fr; }
+  .pro-tab { padding: 9px 10px; font-size: 0.74rem; }
+}
 .msg-bubble .md-body { line-height: 1.7; }
 .msg-bubble .md-body p { margin: 0 0 8px; }
 .msg-bubble .md-body p:last-child { margin-bottom: 0; }
@@ -2651,19 +2864,19 @@ body.dark-mode .msg-bubble .md-body code { background: rgba(0,212,255,0.1); }
   <header class="app-header">
     <div class="header-brand">
       <div class="header-dot"><i class="fas fa-shield-halved"></i></div>
-      Monitor de Riesgo — V7 (OCR)
+      <span class="pro-header-title">Monitor de Riesgo</span>
     </div>
-    <span class="header-badge" id="pro-badge">Profesional</span>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <span class="header-badge pro-header-badge" id="pro-badge">Profesional</span>
+    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
       <button class="dark-toggle" onclick="toggleDark()" title="Modo claro/oscuro" style="border-color:rgba(0,212,255,0.3);color:#00d4ff;background:rgba(0,212,255,0.08);"><i class="fas fa-moon"></i></button>
-      <button class="btn-back" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
+      <button class="btn-back" onclick="goBack()"><i class="fas fa-arrow-left"></i><span class="btn-back-label"> Volver</span></button>
     </div>
   </header>
 
   <div class="pro-container">
 
     <div class="pro-title-section">
-      <h1 id="pro-main-title"><i class="fas fa-chart-network"></i> Monitor de Riesgo Suicida</h1>
+      <h1 id="pro-main-title">Monitor de Riesgo Suicida</h1>
       <p>Panel avanzado para <span id="pro-role-desc">profesionales de la salud</span> · Análisis de texto, evaluación clínica y protocolos de intervención</p>
     </div>
 
@@ -2738,7 +2951,7 @@ body.dark-mode .msg-bubble .md-body code { background: rgba(0,212,255,0.1); }
       </div>
       <div class="checklist-card" style="margin-top:16px;">
         <h4><i class="fas fa-shield-virus"></i> Factores de riesgo y protectores</h4>
-        <div class="two-col-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="two-col-grid">
           <div>
             <p style="font-size:0.8rem;color:#ff6b5b;margin-bottom:8px;font-weight:600;"><i class="fas fa-triangle-exclamation"></i> Factores de RIESGO presentes</p>
             <div id="risk-factors-list"></div>
@@ -2864,7 +3077,7 @@ body.dark-mode .msg-bubble .md-body code { background: rgba(0,212,255,0.1); }
       </div>
       <div class="checklist-card" style="margin-top:16px;">
         <h4><i class="fas fa-triangle-exclamation"></i> Qué NO decir a la familia</h4>
-        <div class="two-col-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="two-col-grid">
           <div style="background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.2);border-radius:10px;padding:14px;">
             <p style="color:#ff6b5b;font-size:0.82rem;font-weight:600;margin-bottom:6px;"><i class="fas fa-ban"></i> Evitar</p>
             <ul style="font-size:0.82rem;color:#909090;line-height:1.8;padding-left:16px;margin:0;"><li>"Su hijo es suicida"</li><li>"Esto pasó por su culpa"</li><li>"No es para tanto"</li><li>"En mi tiempo no había esto"</li><li>"Seguro es por el celular"</li></ul>
