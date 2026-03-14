@@ -21,6 +21,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- DOMPurify: sanitiza el HTML generado por marked.parse() antes de inyectarlo al DOM -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 
@@ -3153,6 +3154,9 @@ body.dark-mode .msg-bubble .md-body code { background: rgba(0,212,255,0.1); }
       <button class="btn-save-session" id="btn-save-session" onclick="openSaveConsentModal()" title="Guardar conversación para retomar después" style="display:none;">
         <i class="fas fa-bookmark"></i> Guardar
       </button>
+      <button class="btn-save-session" id="btn-pdf-chat" onclick="exportChatPDF()" title="Descargar conversación como PDF" style="display:none;border-color:rgba(61,122,138,0.45);color:var(--teal);">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
       <button class="btn-back" onclick="nuevaConversacion()" title="Nueva conversación" style="border-color:var(--sage);color:var(--sage);">
         <i class="fas fa-rotate-right"></i> Nueva
       </button>
@@ -4831,28 +4835,39 @@ const GROQ_MODEL     = 'llama-3.3-70b-versatile';
 // autoritativa, por lo que el valor aquí nunca llega intacto a Groq.
 // Tener la variable en el cliente garantiza que el chat funcione incluso
 // si el worker está desactualizado o se usa en entorno local.
-const SYSTEM_PROMPT = `Eres un asistente de apoyo emocional llamado "Aura", parte de "SentinelCareAI". Tu misión es ofrecer compañía empática y cálida, como un amigo que escucha sin juzgar. Tu prioridad es que la persona se sienta comprendida y validada.
+const SYSTEM_PROMPT = `Eres Aura. No eres un bot, no eres un asistente, no eres una herramienta. Eres una presencia — cálida, cercana, real. Alguien que está ahí cuando la vida se pone difícil y la persona no sabe a quién contarle.
 
-MEMORIA Y COHERENCIA — MUY IMPORTANTE:
-- Lee SIEMPRE todo el historial de conversación antes de responder.
-- Si la persona ya te contó algo (un problema, una situación, un nombre, una emoción), RECUÉRDALO y úsalo. Por ejemplo: "Antes mencionaste que…" o "Sobre lo que me contabas de tu mamá…".
-- NUNCA repitas preguntas que ya fueron respondidas.
-- NUNCA cambies de tema abruptamente ni olvides lo que se habló.
-- Mantén una narrativa continua: cada respuesta tuya debe conectarse con lo anterior.
+Piensa en cómo responde la persona que más quieres cuando estás mal. No te da un manual de pasos. No te pregunta diez cosas. No te dice "todo va a estar bien" porque sabe que eso suena hueco. Solo está. Te escucha. Te hace sentir que lo que sientes tiene sentido. Que no estás exagerando. Que no estás solo.
 
-Pautas de tono:
-- Habla con calidez, usando un tono cercano y humano. Evita frases frías o robóticas.
-- Refleja y valida las emociones que la persona expresa. Por ejemplo: "Eso suena muy difícil, entiendo que te sientas así".
-- No hagas muchas preguntas; en lugar de eso, invita a compartir más si la persona lo desea, pero sin presionar. Frases como "Si quieres contarme más, estoy aquí para escucharte" son suficientes.
-- No recomiendes números de ayuda a menos que la persona mencione explícitamente una crisis (suicidio, autolesión, abuso grave) o pida ayuda concreta. En esos casos, ofrece los recursos con delicadeza: "Si en algún momento sientes que necesitas hablar con alguien especializado, aquí tienes algunos contactos que podrían ayudarte: ..." pero siempre después de validar.
-- Si la persona habla de abuso, valida profundamente, recuérdale que no es su culpa y que hay personas que pueden ayudarle, pero no insistas en llamar. Puedes mencionar que existen líneas de apoyo como el DIF o CONASAMA, pero sin presión.
-- Recuerda que eres un complemento, no un reemplazo de la ayuda profesional. Sin embargo, tu función principal es acompañar, no derivar inmediatamente.
-- Sé breve pero significativo; unas pocas líneas son suficientes.
-- Usa preguntas abiertas suaves solo para invitar, pero no en cada mensaje.
+Así eres tú.
 
-Ejemplo de tono adecuado:
-- "Gracias por compartir eso conmigo. Debe ser muy pesado llevar todo eso. Estoy aquí para lo que necesites."
-- "Parece que estás pasando por un momento complicado. ¿Quieres contarme más sobre cómo te sientes?"`;
+CÓMO HABLAS:
+Hablas como habla alguien que te importa. Con palabras simples, cercanas, sin tecnicismos. Como si estuvieras sentado junto a la persona tomando un café, no como si estuvieras leyendo un protocolo. Usas el nombre de la persona si lo sabes. Recuerdas lo que te contó antes y lo traes a la conversación porque realmente te importa. No finges — si algo te parece difícil o doloroso, lo dices. "Eso es muy duro." "No me imagino lo que debes estar sintiendo." "Qué pesado, en serio."
+
+SOBRE ACOMPAÑAR:
+Tu trabajo no es resolver. No es aconsejar. No es enseñar. Tu trabajo es estar. Cuando alguien se desahoga, no busca soluciones — busca que alguien lo reciba. Dale eso. Valida lo que siente antes de cualquier otra cosa. Hazle saber que sus emociones tienen sentido, que no está loco ni exagerando, que lo que le pasa es real y merece ser escuchado.
+
+Si después de escuchar y validar sientes que hay algo útil que decir — algo que genuinamente puede ayudar — dilo. Pero como lo diría un amigo: "No sé si esto te sirve, pero a mí una vez me ayudó…" No como consejo de experto. No como obligación. Solo si nace de verdad y si la persona lo necesita o lo pidió.
+
+SOBRE LAS PREGUNTAS:
+No hagas preguntas por hacer. No interrogues. Si la persona quiere contarte más, lo hará. En lugar de preguntar, refleja — "Parece que llevas mucho tiempo cargando con esto tú solo." Eso abre la puerta sin empujar. Si haces una pregunta, que sea una sola, suave, y solo cuando de verdad necesites entender algo para acompañar mejor.
+
+SOBRE LO QUE NUNCA DEBES DECIR:
+— "Todo va a estar bien." No lo sabes, y suena a que quieres cerrar la conversación.
+— "Debes ser fuerte." Las personas ya están siendo fuertes solo con seguir adelante.
+— "Entiendo cómo te sientes." Mejor muéstralo con lo que dices, no lo declares.
+— "Te recomiendo que…" — solo si te lo piden o hay un riesgo serio.
+— "Es normal sentirse así." A veces lo es, pero dicho así suena a que minimizas lo que viven.
+— Listas con viñetas, puntos numerados, subtítulos. Habla como persona.
+
+MEMORIA:
+Recuerdas todo lo que te han contado en la conversación. Si mencionaron a alguien, a un problema, a un miedo — lo tienes presente y lo usas. Eso es lo que hace que una persona se sienta verdaderamente escuchada: que no tenga que repetirse.
+
+CUANDO HAY CRISIS:
+Si alguien menciona querer hacerse daño, no querer seguir viviendo, o está en una situación de abuso — primero lo recibes con toda tu presencia. Sin alarmarte, sin saltar a los recursos de golpe. Primero la persona, siempre. Luego, con mucho cuidado y cariño, le haces saber que no está sola y que hay personas capacitadas que pueden acompañarle también: "Si en algún momento sientes que necesitas más apoyo del que yo puedo darte, hay líneas donde hay personas que escuchan, las 24 horas, sin juzgar." Una vez. Con amor. Sin presión.
+
+LO MÁS IMPORTANTE:
+Que la persona, al terminar de leer tu respuesta, sienta que alguien la vio. Que alguien la escuchó de verdad. Que no está sola. Eso vale más que cualquier consejo, cualquier recurso, cualquier técnica.`;
 // Cuando se detecte que el perfil es 'padre', se puede añadir un prefijo al prompt o cambiar el system prompt
 // Pero lo dejamos igual, ya que el chatbot es adaptable. La función openParentChat ya establece currentProfile='padre'.
 
@@ -4873,8 +4888,8 @@ let pendingFiles = [];
 //     de salida. El borrado es inmediato e irrevocable.
 // ══════════════════════════════════════════════
 const CHAT_STORAGE_KEY  = 'sentinelChatSession';
-const CHAT_MAX_DAYS     = 7;   // auto-expire tras 7 días sin abrir
-const CHAT_MAX_MESSAGES = 30;  // máx mensajes almacenados
+const CHAT_MAX_DAYS     = 30;   // auto-expire tras 30 días sin abrir
+const CHAT_MAX_MESSAGES = 60;  // máx mensajes almacenados
 
 // Llamada SOLO desde confirmSaveSession() — nunca automáticamente
 function saveChatSession() {
@@ -4926,8 +4941,11 @@ function confirmSaveSession() {
 
 // ── Mostrar/ocultar botón Guardar según haya mensajes ──
 function updateSaveButton() {
-  const btn = document.getElementById('btn-save-session');
-  if (btn) btn.style.display = chatHistory.length > 1 ? 'inline-flex' : 'none';
+  const btn    = document.getElementById('btn-save-session');
+  const btnPdf = document.getElementById('btn-pdf-chat');
+  const show   = chatHistory.length > 1 ? 'inline-flex' : 'none';
+  if (btn)    btn.style.display    = show;
+  if (btnPdf) btnPdf.style.display = show;
 }
 
 function flashSavedPill() {
@@ -5682,114 +5700,214 @@ function exportChatPDF() {
     alert('No hay mensajes en la conversación para exportar.');
     return;
   }
-  const profileLabels = { joven: 'Joven', adulto: 'Adulto', padre: 'Guía para padres' };
-  const profileLabel  = escapeHtml(profileLabels[currentProfile] || 'Usuario');
-  const fecha = new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  const hora  = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', hour12: true });
 
-  const rows = chatHistory.map(m => {
-    const isUser = m.role === 'user';
-    const quien  = isUser ? '🧑 Tú' : '💚 Aura';
-    const time   = m.time ? `<span class="pdf-time">${escapeHtml(m.time)}</span>` : '';
-    // Escapar primero, luego aplicar solo el markdown permitido (bold/italic/saltos)
-    const texto  = escapeHtml(m.text || m.content || '')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
-    return `<div class="pdf-msg ${isUser ? 'pdf-user' : 'pdf-ai'}">
-      <div class="pdf-who">${quien} ${time}</div>
-      <div class="pdf-text">${texto}</div>
-    </div>`;
-  }).join('');
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) {
+    alert('La librería de PDF no cargó aún. Intenta de nuevo en unos segundos.');
+    return;
+  }
 
-  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-<title>Resumen — SentinelCareAI</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: Georgia, serif; font-size: 12pt; color: #1a1a1a; padding: 32px 40px; max-width: 700px; margin: 0 auto; }
-.pdf-header { border-bottom: 2px solid #3d7a8a; padding-bottom: 18px; margin-bottom: 24px; }
-.pdf-logo { font-size: 18pt; font-weight: 700; color: #3d7a8a; }
-.pdf-logo span { color: #6b8f71; }
-.pdf-meta { font-size: 9.5pt; color: #666; margin-top: 6px; line-height: 1.7; }
-.pdf-disclaimer { background: #f0f7f4; border-left: 3px solid #6b8f71; padding: 10px 14px; font-size: 9pt; color: #444; margin-bottom: 24px; line-height: 1.6; border-radius: 0 6px 6px 0; }
-.pdf-msg { margin-bottom: 14px; padding: 12px 16px; border-radius: 10px; page-break-inside: avoid; }
-.pdf-user { background: #f0f4ff; border: 1px solid #d0d8f0; }
-.pdf-ai   { background: #f0f7f4; border: 1px solid #c8ddd0; }
-.pdf-who  { font-size: 8.5pt; font-weight: 700; color: #555; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-.pdf-time { font-weight: 400; color: #999; text-transform: none; letter-spacing: 0; }
-.pdf-text { font-size: 11pt; line-height: 1.7; }
-.pdf-crisis { background: #fff5f5; border: 1px solid #f5c0bb; border-radius: 8px; padding: 14px 18px; margin-top: 24px; }
-.pdf-crisis-title { font-weight: 700; color: #c0392b; font-size: 10pt; margin-bottom: 8px; }
-.pdf-crisis li { font-size: 10pt; line-height: 2; padding-left: 18px; }
-.pdf-footer { border-top: 1px solid #ddd; margin-top: 24px; padding-top: 12px; font-size: 8.5pt; color: #888; text-align: center; line-height: 1.8; }
-@media print { body { padding: 0; } @page { margin: 2cm; size: A4; } }
-<\/style><\/head><body>
-<div class="pdf-header">
-  <div class="pdf-logo">Sentinel<span>Care</span>AI</div>
-  <div class="pdf-meta">Resumen de conversación · Perfil: ${profileLabel}<br>Generado el ${fecha} a las ${hora}</div>
-</div>
-<div class="pdf-disclaimer"><strong>Nota de privacidad:</strong> Este resumen fue generado localmente en tu dispositivo. Ningún tercero recibe ni almacena este documento. Puedes compartirlo con tu terapeuta o persona de confianza.</div>
-${rows}
-<div class="pdf-crisis">
-  <div class="pdf-crisis-title">📞 Líneas de apoyo — 24 hrs, sin costo</div>
-  <ul>
-    <li><strong>CONASAMA Línea de la Vida:</strong> 800 290-0024</li>
-    <li><strong>SAPTEL:</strong> 55 5259-8121</li>
-    <li><strong>DIF Nacional:</strong> 800 222-2268</li>
-    <li><strong>Emergencias:</strong> 911</li>
-  </ul>
-</div>
-<div class="pdf-footer">SentinelCareAI — Herramienta de apoyo emocional · No sustituye atención profesional</div>
-<\/body><\/html>`;
+  const profileLabels = { joven: 'Joven', adulto: 'Adulto', padre: 'Guía para padres', maestro: 'Maestro/a', salud: 'Salud' };
+  const profileLabel  = profileLabels[currentProfile] || 'Usuario';
+  const fecha  = new Date().toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const hora   = new Date().toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', hour12: true });
+  const dateStr = new Date().toISOString().slice(0,10);
+  const fileName = 'SentinelCareAI_Conversacion_' + dateStr + '.pdf';
 
-  const win = window.open('', '_blank', 'width=800,height=900');
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 500);
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // ── PDF metadata (para lectores de PDF, no solo impresión) ────
+  doc.setProperties({
+    title:    'Conversación con Aura — SentinelCareAI',
+    subject:  'Resumen de sesión de apoyo emocional',
+    author:   'SentinelCareAI',
+    keywords: 'apoyo emocional, salud mental, SentinelCareAI',
+    creator:  'SentinelCareAI — Contigo Siempre'
+  });
+
+  const pageW    = doc.internal.pageSize.getWidth();
+  const pageH    = doc.internal.pageSize.getHeight();
+  const marginL  = 18;
+  const marginR  = 18;
+  const contentW = pageW - marginL - marginR;
+  let y = 0;
+
+  // ── Colors ────────────────────────────────────────────────────
+  const teal     = [61, 122, 138];
+  const sage     = [107, 143, 113];
+  const darkText = [28, 28, 42];
+  const midText  = [90, 90, 110];
+  const lightBg  = [240, 247, 244];
+  const userBg   = [240, 244, 255];
+  const auraBg   = [235, 245, 242];
+
+  function checkPage(needed) {
+    if (y + needed > pageH - 20) {
+      doc.addPage();
+      // Repeat small header on each page
+      doc.setFillColor(...teal);
+      doc.rect(0, 0, pageW, 8, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SentinelCareAI — Contigo Siempre', marginL, 5.5);
+      doc.text(fecha, pageW - marginR, 5.5, { align: 'right' });
+      y = 14;
+    }
+  }
+
+  function wrapText(text, fontSize, maxW) {
+    doc.setFontSize(fontSize);
+    return doc.splitTextToSize(String(text), maxW);
+  }
+
+  // ── Page 1 Header ──────────────────────────────────────────────
+  // Top color bar
+  doc.setFillColor(...teal);
+  doc.rect(0, 0, pageW, 18, 'F');
+
+  // App name
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SentinelCareAI', marginL, 11);
+
+  // Subtitle
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Contigo Siempre', pageW - marginR, 11, { align: 'right' });
+
+  y = 26;
+
+  // Title
+  doc.setTextColor(...darkText);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Resumen de conversación', marginL, y);
+  y += 8;
+
+  // Meta info
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...midText);
+  doc.text('Perfil: ' + profileLabel + '   ·   ' + fecha + '   ·   ' + hora, marginL, y);
+  y += 4;
+  doc.text('Total de mensajes: ' + chatHistory.length, marginL, y);
+  y += 5;
+
+  // Divider
+  doc.setDrawColor(...teal);
+  doc.setLineWidth(0.6);
+  doc.line(marginL, y, pageW - marginR, y);
+  y += 6;
+
+  // Privacy note
+  doc.setFillColor(245, 250, 248);
+  doc.setDrawColor(180, 220, 200);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(marginL, y, contentW, 14, 2, 2, 'FD');
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(...midText);
+  doc.text('🔒  Este PDF fue generado directamente en tu dispositivo. Nadie más lo recibió ni lo almacenó.', marginL + 4, y + 5.5);
+  doc.text('Puedes compartirlo con tu terapeuta o persona de confianza de forma segura.', marginL + 4, y + 10);
+  doc.setFont('helvetica', 'normal');
+  y += 20;
+
+  // ── Messages ──────────────────────────────────────────────────
+  chatHistory.forEach(function(m, idx2) {
+    const isUser  = m.role === 'user';
+    const quien   = isUser ? 'TÚ' : 'AURA';
+    const rawText = (m.text || m.content || '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/^#{1,3}\s+/gm, '')
+      .trim();
+    if (!rawText) return;
+
+    const timeLabel = m.time ? '  ' + m.time : '';
+    const msgLines  = wrapText(rawText, 10.5, contentW - 12);
+    const blockH    = 7 + 5.5 * msgLines.length + 6;
+
+    checkPage(blockH + 4);
+
+    // Bubble
+    const bgColor = isUser ? userBg : auraBg;
+    doc.setFillColor(...bgColor);
+    doc.setDrawColor(isUser ? 180 : 160, isUser ? 195 : 210, isUser ? 240 : 200);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(marginL, y, contentW, blockH, 2.5, 2.5, 'FD');
+
+    // Accent bar
+    doc.setFillColor(...(isUser ? [100, 130, 210] : sage));
+    doc.roundedRect(marginL, y, 3, blockH, 1, 1, 'F');
+
+    // Sender + time
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...(isUser ? [60, 80, 180] : [80, 120, 90]));
+    doc.text(quien + timeLabel, marginL + 7, y + 5.5);
+
+    // Message body
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...darkText);
+    doc.text(msgLines, marginL + 7, y + 11);
+
+    y += blockH + 4;
+  });
+
+  y += 6;
+
+  // ── Crisis resources ─────────────────────────────────────────
+  checkPage(48);
+
+  doc.setFillColor(255, 248, 246);
+  doc.setDrawColor(220, 150, 145);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(marginL, y, contentW, 46, 3, 3, 'FD');
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(180, 50, 40);
+  doc.text('Líneas de apoyo — 24 hrs, sin costo', marginL + 6, y + 8);
+
+  const crisis = [
+    ['CONASAMA — Línea de la Vida', '800 290-0024'],
+    ['SAPTEL',                       '55 5259-8121'],
+    ['DIF Nacional',                 '800 222-2268'],
+    ['Emergencias',                  '911'],
+  ];
+  doc.setFontSize(9.5);
+  crisis.forEach(function(pair, i) {
+    const ly = y + 16 + i * 7;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...darkText);
+    doc.text(pair[0], marginL + 8, ly);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...teal);
+    doc.text(pair[1], marginL + 90, ly);
+  });
+
+  // ── Footer on every page ─────────────────────────────────────
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(210, 210, 210);
+    doc.setLineWidth(0.3);
+    doc.line(marginL, pageH - 13, pageW - marginR, pageH - 13);
+    doc.setFontSize(7.5);
+    doc.setTextColor(160, 160, 160);
+    doc.setFont('helvetica', 'normal');
+    doc.text('SentinelCareAI · Apoyo emocional con IA · No sustituye atención profesional', marginL, pageH - 8);
+    doc.text('Pág. ' + i + ' / ' + totalPages, pageW - marginR, pageH - 8, { align: 'right' });
+  }
+
+  // ── Save / Download ──────────────────────────────────────────
+  doc.save(fileName);
 }
-</script>
 
-<!-- ══════════════════════════════════════════════
-     PWA — SERVICE WORKER + BANNER DE INSTALACIÓN
-══════════════════════════════════════════════ -->
-<script>
-// Dominios donde el SW y sw.js existen realmente.
-// En previews (Claude, StackBlitz, CodePen, etc.) se omite el registro
-// para evitar errores 404 que no son accionables por el usuario.
-const SW_ALLOWED_HOSTS = [
-  'pablogalvan22.github.io',
-  'localhost',
-  '127.0.0.1',
-];
-const _swHostAllowed = SW_ALLOWED_HOSTS.some(h => location.hostname === h || location.hostname.endsWith('.' + h));
 
-if ('serviceWorker' in navigator && _swHostAllowed) {
-  window.addEventListener('load', () => {
-    // Ruta relativa — funciona tanto en local como en GitHub Pages
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('SW registrado ✓'))
-      .catch(err => console.warn('SW no registrado:', err));
-  });
-
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    showInstallBanner();
-  });
-  window.addEventListener('appinstalled', () => {
-    hideInstallBanner();
-    deferredPrompt = null;
-  });
-  window.installApp = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') hideInstallBanner();
-    deferredPrompt = null;
-  };
-}
 
 function showInstallBanner() {
   if (document.getElementById('pwa-banner')) return;
