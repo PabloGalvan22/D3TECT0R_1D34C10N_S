@@ -1,99 +1,117 @@
 # SentinelCareAI — Contigo Siempre
 
-> Plataforma PWA de apoyo emocional y detección de riesgo con inteligencia artificial.  
+> Plataforma PWA de apoyo emocional y detección de riesgo con inteligencia artificial.
 > Diseñada para el contexto hispanohablante mexicano.
 
-![Versión](https://img.shields.io/badge/versión-2.0-teal)
-![Licencia](https://img.shields.io/badge/licencia-MIT-green)
+![Versión](https://img.shields.io/badge/versión-2.1-teal)
 ![PWA](https://img.shields.io/badge/PWA-ready-blue)
 ![Modelo](https://img.shields.io/badge/modelo-Llama%203.3%2070B-orange)
+![Offline](https://img.shields.io/badge/offline-compatible-green)
 
 ---
 
 ## Índice
 
 - [¿Qué es?](#qué-es)
-- [Características](#características)
+- [Características principales](#características-principales)
 - [Arquitectura](#arquitectura)
 - [Estructura de archivos](#estructura-de-archivos)
 - [Instalación y despliegue](#instalación-y-despliegue)
 - [Configuración del Worker](#configuración-del-worker)
 - [Perfiles de usuario](#perfiles-de-usuario)
+- [Aura — el acompañante emocional](#aura--el-acompañante-emocional)
+- [Rastreador de bienestar](#rastreador-de-bienestar)
 - [Módulo profesional](#módulo-profesional)
+- [PWA e instalación](#pwa-e-instalación)
 - [Seguridad](#seguridad)
-- [PWA y modo offline](#pwa-y-modo-offline)
-- [Mejoras aplicadas](#mejoras-aplicadas)
-- [Créditos y tecnologías](#créditos-y-tecnologías)
+- [Registro de mejoras](#registro-de-mejoras)
+- [Tecnologías utilizadas](#tecnologías-utilizadas)
+- [Líneas de crisis](#líneas-de-crisis)
 
 ---
 
 ## ¿Qué es?
 
-SentinelCareAI es una aplicación web progresiva (PWA) que combina:
+SentinelCareAI es una aplicación web progresiva (PWA) instalable en cualquier dispositivo que combina:
 
-- **Aura** — un asistente de apoyo emocional empático, basado en Llama 3.3 70B vía Groq
-- **Detector de riesgo** — análisis por palabras clave con validación de segunda capa mediante IA
-- **Módulo profesional** — herramienta para psicólogos y docentes con análisis masivo de texto, reportes clínicos y exportación a Excel
+- **Aura** — un acompañante emocional empático basado en Llama 3.3 70B via Groq, diseñado para escuchar y acompañar, no para aconsejar a menos que se lo pidan
+- **Rastreador de bienestar** — registro diario de estado emocional con gráfica histórica que Aura lee en contexto
+- **Módulo profesional** — herramienta para psicólogos y docentes con análisis masivo de texto, detección de riesgo e IA de validación
+- **Funcionalidad offline** — Aura responde aunque no haya internet, con respuestas empáticas locales por categoría
 
-Funciona completamente en el navegador como PWA instalable, con soporte offline para el chat.
+Todo funciona en el navegador. No hay servidor propio ni base de datos. La privacidad es por diseño.
 
 ---
 
-## Características
+## Características principales
 
 ### Chat con Aura
-- Conversación empática con memoria de sesión completa
+
+- Conversación empática con memoria completa de la sesión
+- Aura acompaña primero y aconseja solo cuando la persona lo pide o hay riesgo real
+- Contexto emocional automático: lee los últimos 14 días del rastreador antes de cada respuesta
 - Detección automática de crisis con overlay de recursos de emergencia
-- Soporte de archivos adjuntos (texto e imágenes)
-- Reconocimiento de voz vía Groq Whisper
-- Modo offline: respuestas locales predefinidas por categoría cuando no hay red
-- Persistencia opcional del historial (consentimiento explícito del usuario)
-- Sesión guardada con expiración automática a los 7 días
+- Soporte de archivos adjuntos: texto e imágenes
+- Reconocimiento de voz via Groq Whisper
+- Modo offline: respuestas locales predefinidas por categoría (crisis, tristeza, ansiedad, etc.)
+- Persistencia opcional del historial con consentimiento explícito del usuario
+- Expiración automática del historial guardado
+- Descarga de conversación como PDF con metadatos, diseño visual y líneas de crisis al final
 
 ### Rastreador de bienestar
-- Selector de estado emocional diario (5 niveles)
-- Historial visual con Chart.js
-- Datos persistidos en localStorage
 
-### Módulo profesional (acceso con contraseña)
+- Selector de estado emocional diario en 5 niveles (Muy bien a Muy mal)
+- Historial visual con Chart.js (últimos 7 días)
+- Datos persistidos en localStorage
+- Integración con Aura: el historial emocional se inyecta como contexto en cada petición, con análisis de tendencia automático
+
+### Módulo profesional
+
+Acceso protegido por contraseña. Herramienta para psicólogos, orientadores y docentes.
+
 - Carga de archivos Excel/CSV con columnas de texto libre
-- Detección de riesgo por palabras clave en 7 categorías: suicidio, autolesión, violencia, abuso, crisis, sustancias, aislamiento
-- Validación IA en lotes de 15 casos (ALTO/EXTREMO) para reducir falsos positivos
-- Análisis clínico narrativo generado por IA con secciones estructuradas
-- Nube de palabras clave (WordCloud2)
 - OCR sobre imágenes con Tesseract.js
-- Exportación a CSV y XLSX con hoja de resumen
-- Notas clínicas por paciente con persistencia local
-- Escala de valoración rápida del riesgo individual
+- Detección de riesgo por palabras clave en 7 categorías
+- Validación IA automática por lotes de 15 para reducir falsos positivos
+- Análisis clínico narrativo generado por IA
+- Nube de palabras clave (WordCloud2)
+- Exportación a CSV y XLSX con hoja de resumen ejecutivo
+- Notas clínicas por paciente persistidas localmente
+- Escala de valoración rápida de riesgo individual
 
 ---
 
 ## Arquitectura
 
 ```
-┌─────────────────────────────────────┐
-│           Navegador / PWA           │
-│  index.html + JS + CSS              │
-│  Service Worker (sentinelcare-v2)   │
-└────────────────┬────────────────────┘
-                 │ POST /chat  /transcribe
-                 ▼
-┌─────────────────────────────────────┐
-│    Cloudflare Worker (Proxy)        │
-│    sentinel-proxy.*.workers.dev     │
-│                                     │
-│  • Inyecta system prompt de Aura    │
-│  • Valida modelos permitidos        │
-│  • Clamp temperature / max_tokens   │
-│  • Rate limit: 30 req/min · 500/día │
-│  • CORS allowlist                   │
-└────────────────┬────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────┐
-│         Groq API                    │
-│  Modelo: llama-3.3-70b-versatile    │
-└─────────────────────────────────────┘
+┌────────────────────────────────────────────┐
+│             Navegador / PWA                │
+│  index.html + JS inline                    │
+│  Service Worker sentinelcare-v2            │
+│  localStorage (historial, bienestar,       │
+│  notas — todo local, nunca sale)           │
+└──────────────────┬─────────────────────────┘
+                   │ POST /chat  /transcribe
+                   ▼
+┌────────────────────────────────────────────┐
+│       Cloudflare Worker (Proxy)            │
+│  sentinel-proxy.*.workers.dev              │
+│                                            │
+│  • Inyecta system prompt de Aura           │
+│  • Filtra rol system del cliente           │
+│  • Valida allowlist de modelos             │
+│  • Clamp temperature y max_tokens          │
+│  • Rate limit 30 req/min · 500 req/dia     │
+│  • CORS allowlist estricto                 │
+│  • Observability activado                  │
+└──────────────────┬─────────────────────────┘
+                   │
+                   ▼
+┌────────────────────────────────────────────┐
+│              Groq API                      │
+│  llama-3.3-70b-versatile                  │
+│  whisper-large-v3 (transcripcion)          │
+└────────────────────────────────────────────┘
 ```
 
 ---
@@ -102,71 +120,57 @@ Funciona completamente en el navegador como PWA instalable, con soporte offline 
 
 ```
 proyecto/
-├── index.html          # App completa (PWA single-page)
-├── manifest.json       # Manifiesto PWA
-├── sw.js               # Service Worker v2
-├── offline.html        # Página de fallback sin conexión
-├── favicon.ico         # Favicon multi-tamaño (64/32/16px)
-├── icon-192.png        # Ícono PWA 192×192
-├── icon-512.png        # Ícono PWA 512×512
-├── worker.js           # Cloudflare Worker (proxy seguro)
-└── wrangler.toml       # Configuración de Cloudflare Workers
+├── index.html        # App completa — PWA single-page
+├── manifest.json     # Manifiesto PWA
+├── sw.js             # Service Worker v2
+├── offline.html      # Pagina de marca sin red
+├── favicon.ico       # Favicon multi-tamano (64/32/16 px)
+├── icon-192.png      # Icono PWA 192x192
+├── icon-512.png      # Icono PWA 512x512
+├── worker.js         # Cloudflare Worker — proxy seguro
+└── wrangler.toml     # Configuracion Cloudflare Workers
 ```
+
+> `worker.js` y `wrangler.toml` se despliegan en Cloudflare.
+> El resto va al hosting estatico (GitHub Pages u otro).
 
 ---
 
 ## Instalación y despliegue
 
 ### Requisitos
-- Cuenta en [Cloudflare](https://cloudflare.com) (gratuita)
-- Cuenta en [Groq](https://console.groq.com) con API key
-- Repositorio en GitHub Pages (u otro hosting estático)
 
-### 1. Clonar y configurar
+- Cuenta en [Cloudflare](https://cloudflare.com) — plan gratuito
+- API key de [Groq](https://console.groq.com) — plan gratuito
+- Hosting estatico: GitHub Pages, Netlify, Vercel, etc.
 
-```bash
-git clone https://github.com/tu-usuario/SentinelCareAI.git
-cd SentinelCareAI
-```
-
-### 2. Desplegar el Worker en Cloudflare
+### 1. Desplegar el Worker
 
 ```bash
-# Instalar Wrangler CLI
 npm install -g wrangler
-
-# Autenticarse
 wrangler login
-
-# Agregar la API key de Groq como secret (nunca en el código)
 wrangler secret put GROQ_API_KEY
-
-# Desplegar
 wrangler deploy
 ```
 
-> Anota la URL que devuelve Wrangler (ej: `https://sentinel-proxy.tu-usuario.workers.dev`)  
-> y actualízala en `index.html` en la variable `PROXY_BASE_URL`.
+Anota la URL que devuelve Wrangler y actualiza `PROXY_BASE_URL` en `index.html`.
 
-### 3. Subir los archivos estáticos
+### 2. Subir archivos estaticos
 
-Sube todos los archivos (excepto `worker.js` y `wrangler.toml`) a GitHub Pages o tu hosting preferido.
-
-```bash
-git add .
-git commit -m "deploy: SentinelCareAI v2"
-git push origin main
+```
+index.html  manifest.json  sw.js  offline.html
+favicon.ico  icon-192.png  icon-512.png
 ```
 
-### 4. Primera vez en producción
+### 3. Primera apertura
 
-Abre la app en **modo incógnito** para que el Service Worker se registre limpiamente sin conflictos de caché.
+Abrir en **modo incognito** para que el Service Worker se registre sin conflictos de cache.
 
 ---
 
 ## Configuración del Worker
 
-### `wrangler.toml`
+### wrangler.toml
 
 ```toml
 name = "sentinel-proxy"
@@ -174,193 +178,226 @@ main = "worker.js"
 compatibility_date = "2025-01-01"
 
 [observability]
-enabled = true   # Logs en Cloudflare Dashboard → Workers → sentinel-proxy
+enabled = true
 ```
 
-### Variables de entorno
+### Rate limiting (por IP, en memoria)
 
-| Variable | Cómo configurar | Descripción |
-|---|---|---|
-| `GROQ_API_KEY` | `wrangler secret put GROQ_API_KEY` | API key de Groq (nunca en el código) |
-
-### Rate limiting (en memoria)
-
-| Límite | Valor |
+| Ventana | Limite |
 |---|---|
-| Máx. requests por minuto por IP | 30 |
-| Máx. requests por día por IP | 500 |
-
-> El rate limiter vive en memoria del Worker. Se reinicia en cold starts. Para persistencia total se necesitaría Cloudflare KV.
+| Por minuto | 30 requests |
+| Por dia | 500 requests |
 
 ### Modelos permitidos (allowlist)
 
-- `llama-3.3-70b-versatile` *(default)*
-- `llama-3.1-8b-instant`
-- `llama-3.2-11b-vision-preview`
-- `llama-3.2-90b-vision-preview`
-- `mixtral-8x7b-32768`
-- `gemma2-9b-it`
+`llama-3.3-70b-versatile` · `llama-3.1-8b-instant` · `llama-3.2-11b-vision-preview` · `llama-3.2-90b-vision-preview` · `mixtral-8x7b-32768` · `gemma2-9b-it`
 
 ---
 
 ## Perfiles de usuario
 
-| Perfil | Descripción |
+| Perfil | Descripcion |
 |---|---|
-| **Joven** | Adolescentes y jóvenes adultos |
+| **Joven** | Adolescentes y jovenes adultos |
 | **Adulto** | Adultos en general |
 | **Salud** | Profesionales de la salud |
-| **Maestro/a** | Docentes con alumnos en riesgo |
+| **Maestro/a** | Docentes con alumnos en situacion de riesgo |
 | **Padre/Madre** | Padres y tutores preocupados |
 
-Cada perfil carga un saludo inicial personalizado y adapta el contexto del chat.
+---
+
+## Aura — el acompañante emocional
+
+### Filosofia de acompañamiento
+
+Aura no es un chatbot de respuestas automaticas. Tiene una identidad definida:
+
+- **Acompaña primero, aconseja despues** — y solo si la persona lo pide o hay riesgo real
+- **No hace preguntas por hacer** — refleja en lugar de interrogar
+- **Nunca usa frases de manual** — nada de "todo va a estar bien", "debes ser fuerte"
+- **Responde con la longitud que la situacion merece** — sin limites artificiales
+- **Habla como un amigo cercano** — sin tecnicismos ni tono clinico
+
+### Contexto emocional automatico
+
+Antes de cada respuesta, Aura recibe un resumen privado del rastreador:
+
+```
+CONTEXTO EMOCIONAL DE LA PERSONA:
+La persona ha registrado como se ha sentido en los ultimos dias:
+11/03: Bien | 12/03: Regular | 13/03: Mal | hoy: Muy mal
+Hoy se ha registrado sintiendose muy mal.
+Su estado emocional ha empeorado en los ultimos dias - ten esto muy presente.
+Usa este contexto con sutileza — no lo menciones directamente a menos que sea relevante.
+```
+
+Aura no lo menciona de frente — lo usa para calibrar la profundidad de cada respuesta.
+
+### Manejo de crisis
+
+Al detectar palabras de riesgo, la app muestra un overlay con lineas de crisis. Aura valida primero y solo despues, con cuidado, menciona los recursos disponibles.
+
+---
+
+## Rastreador de bienestar
+
+| Emoji | Nivel | Valor |
+|---|---|---|
+| Cara sonriente | Muy bien | 5 |
+| Cara con sonrisa leve | Bien | 4 |
+| Cara neutral | Regular | 3 |
+| Cara triste | Mal | 2 |
+| Cara llorando | Muy mal | 1 |
+
+- Un registro por dia (actualizable)
+- Historial visual de los ultimos 7 dias
+- 100% local en localStorage — nunca sale del dispositivo
+- Analisis de tendencia: si el promedio bajo mas de 0.6 puntos, Aura recibe alerta de empeoramiento
 
 ---
 
 ## Módulo profesional
 
-Acceso protegido con contraseña hasheada en el cliente.
-
-### Flujo de análisis
+### Flujo de analisis
 
 ```
-1. Cargar Excel/CSV
-        ↓
+1. Cargar Excel / CSV / imagen (OCR)
 2. Seleccionar columna de texto
-        ↓
-3. Análisis por palabras clave (local, sin red)
-        ↓
-4. Clasificación: NULO / BAJO / MEDIO / ALTO / EXTREMO
-        ↓
-5. Validación IA automática (casos ALTO/EXTREMO)
-   → Lotes de 15 casos · pausa 1.2s entre lotes
-   → Veredicto: REAL o FALSO_POSITIVO
-        ↓
-6. Análisis clínico narrativo (botón manual)
-        ↓
-7. Exportar CSV / XLSX
+3. Analisis local por palabras clave
+4. Clasificacion: NULO / BAJO / MEDIO / ALTO / EXTREMO
+5. Validacion IA — lotes de 15 con pausa 1.2s entre lotes
+   Veredicto: REAL o FALSO_POSITIVO
+6. Analisis clinico narrativo (bajo demanda)
+7. Exportar CSV / XLSX con resumen ejecutivo
 ```
 
-### Categorías de detección
+### Categorias de deteccion
 
-- Suicidio e ideación suicida
-- Autolesión
-- Violencia (hacia otros)
-- Abuso y violación
-- Crisis emocional severa
-- Sustancias
-- Aislamiento social extremo
+Suicidio e ideacion · Autolesion · Violencia · Abuso · Crisis emocional · Sustancias · Aislamiento extremo
+
+---
+
+## PWA e instalación
+
+### Por plataforma
+
+| Plataforma | Comportamiento |
+|---|---|
+| **Windows / Linux / macOS** | Boton fijo "Descargar app" en esquina inferior derecha |
+| **Android** | Banner flotante en la parte inferior |
+| **iOS (Safari)** | Instruccion: "Toca Compartir y Anadir a pantalla de inicio" |
+| **Ya instalada** | No muestra nada |
+
+- Deteccion automatica de plataforma via `navigator.userAgent`
+- Si el usuario descarta el aviso, no reaparece en esa sesion (`sessionStorage`)
+
+### Service Worker (sentinelcare-v2)
+
+| Recurso | Estrategia |
+|---|---|
+| Proxy Groq | Network only |
+| CDN externos | Cache-first + actualizacion background |
+| Paginas HTML | Network-first + fallback `offline.html` |
+| Assets propios | Network-first + fallback cache |
 
 ---
 
 ## Seguridad
 
-| Medida | Descripción |
+| Medida | Detalle |
 |---|---|
 | API key server-side | La key de Groq nunca llega al navegador |
-| System prompt server-side | El Worker inyecta el prompt de Aura; el cliente envía el suyo como fallback |
-| Filtro de rol `system` | El Worker elimina cualquier `role: system` enviado por el cliente |
-| Allowlist de modelos | Solo se aceptan modelos Groq predefinidos |
-| Clamp de parámetros | `temperature` ≤ 1.5, `max_tokens` ≤ 2000 |
-| Rate limiting por IP | 30 req/min · 500 req/día |
-| CORS estricto | Solo orígenes autorizados reciben headers CORS |
-| DOMPurify | Todo HTML generado por IA se sanitiza antes de inyectarse al DOM |
-| Contraseña profesional | Hash SHA-256 verificado en cliente (sin transmisión) |
-| Historial opt-in | El chat no se guarda sin consentimiento explícito del usuario |
+| System prompt server-side | Worker inyecta el prompt; cliente envia copia como fallback |
+| Filtro `role:system` | Worker elimina cualquier rol system del cliente |
+| Allowlist de modelos | Solo 6 modelos Groq autorizados |
+| Clamp de parametros | `temperature` <= 1.5 · `max_tokens` <= 2000 |
+| Rate limiting | 30 req/min · 500 req/dia por IP |
+| CORS estricto | Solo origenes autorizados |
+| DOMPurify | Todo HTML de IA sanitizado antes de inyectarse al DOM |
+| Historial opt-in | No se guarda sin consentimiento explicito |
+| PDF local | Generado en el dispositivo, no en servidor |
+| Datos del rastreador | 100% localStorage — nunca salen del dispositivo |
 
 ---
 
-## PWA y modo offline
+## Registro de mejoras
 
-### Service Worker (`sentinelcare-v2`)
+### v2.1 — Iteracion actual
 
-| Tipo de recurso | Estrategia |
+| # | Mejora | Archivo |
+|---|---|---|
+| 1 | Contexto emocional en Aura — `buildMoodContext()` inyecta los ultimos 14 dias del rastreador con analisis de tendencia en cada peticion | `index.html` |
+| 2 | PDF de conversacion mejorado — metadatos reales, diseno con burbujas, nota de privacidad, lineas de crisis, pie de pagina numerado | `index.html` |
+| 3 | Boton PDF en header del chat — siempre accesible junto al boton Guardar | `index.html` |
+| 4 | Sistema de instalacion PWA por plataforma — desktop (boton fijo), Android (banner), iOS (instruccion Safari). `installApp()` funciona con `beforeinstallprompt` | `index.html` |
+| 5 | Prompt de Aura reescrito — nueva identidad de acompañamiento. Sin preguntas innecesarias, sin consejos no pedidos, sin frases de manual | `index.html` + `worker.js` |
+| 6 | favicon.ico generado — 3 tamanos (64/32/16px) con link en head | `favicon.ico` + `index.html` |
+| 7 | Formulario de contrasena accesible — campo username oculto, type button en el ojo | `index.html` |
+| 8 | Bug fix `\n` en prompt IA — join producía texto literal en lugar de saltos de linea reales | `index.html` |
+| 9 | Bug fix emojis en objeto JS — causaban `Invalid or unexpected token` en algunos navegadores | `index.html` |
+
+### v2.0 — Iteracion anterior
+
+| # | Mejora | Archivos |
+|---|---|---|
+| 1 | Bug join en `runIAAnalysis()` — casos pegados en prompt del modelo | `index.html` |
+| 2 | Allowlist de modelos + clamp de parametros en Worker | `worker.js` |
+| 3 | `compatibility_date` actualizada a 2025-01-01 | `wrangler.toml` |
+| 4 | Validacion IA paginada en lotes de 15 con progreso visible | `index.html` |
+| 5 | Carga diferida de Tesseract / xlsx / WordCloud2 (~4 MB) | `index.html` |
+| 6 | `offline.html` + fallback de navegacion en SW v2 | `sw.js` + `offline.html` |
+| 7 | System prompt server-side con fallback en cliente | `worker.js` + `index.html` |
+| 8 | DOMPurify en todos los `marked.parse()` | `index.html` |
+| 9 | Iconos PWA generados desde el logo oficial | `icon-*.png` |
+| 10 | `[observability] enabled = true` en Cloudflare | `wrangler.toml` |
+
+---
+
+## Tecnologías utilizadas
+
+| Tecnologia | Uso |
 |---|---|
-| Proxy Groq | Network only (nunca cachear) |
-| CDN externos (fonts, Chart.js…) | Cache-first + actualización background |
-| Navegación (HTML) | Network-first + fallback a `offline.html` |
-| Assets propios | Network-first + fallback a caché |
-
-### `offline.html`
-Página de marca que se muestra cuando no hay red ni caché disponible. Incluye:
-- Indicador de estado en tiempo real
-- Línea de crisis CONASAMA visible siempre
-- Auto-redirect al volver la conexión (1.8s de espera)
-- Recordatorio de que el chat offline de Aura sigue disponible en la app
-
-### Instalación como app
-La app es instalable en Android, iOS y escritorio gracias al `manifest.json`. Incluye:
-- Íconos 192×192 y 512×512
-- Orientación portrait-primary
-- Tema `#3d7a8a`
-- Shortcuts: *Chat de apoyo* y *Líneas de crisis*
-
----
-
-## Mejoras aplicadas
-
-A continuación el registro completo de las mejoras implementadas durante el desarrollo:
-
-### 🔴 Críticas (seguridad / corrección)
-
-| # | Fix | Archivo |
-|---|---|---|
-| 1 | **Bug `\\n` en prompt** — `join('\\\\n')` producía texto literal en lugar de saltos de línea; el modelo recibía los casos pegados | `index.html` |
-| 2 | **Allowlist de modelos en Worker** — sin validación, un atacante podía usar la API key con cualquier modelo y parámetros arbitrarios | `worker.js` |
-| 3 | **`compatibility_date` desactualizada** — `"2024-01-01"` → `"2025-01-01"` para APIs de Cloudflare actuales | `wrangler.toml` |
-| 4 | **Validación IA truncada** — `slice(0, 15)` silencioso dejaba casos sin validar; reemplazado por lotes paginados con progreso visible | `index.html` |
-
-### 🟠 Importantes (rendimiento / fiabilidad)
-
-| # | Fix | Archivo |
-|---|---|---|
-| 6 | **Carga diferida de scripts pesados** — Tesseract.js (~2 MB), xlsx (~1.7 MB) y WordCloud2 solo cargan al entrar al módulo profesional | `index.html` |
-| 8 | **Página offline + fallback SW** — `offline.html` precacheada; el SW devuelve la página de marca en lugar de error del navegador | `sw.js`, `offline.html` |
-| 9 | **System prompt server-side** — el Worker inyecta el prompt de Aura eliminando cualquier `role:system` del cliente; el frontend mantiene copia como fallback | `worker.js`, `index.html` |
-
-### 🟡 Menores (calidad / UX)
-
-| # | Fix | Archivo |
-|---|---|---|
-| 10 | **DOMPurify en `marked.parse()`** — todo HTML generado por IA sanitizado antes de inyectarse al DOM | `index.html` |
-| 11 | **Íconos PWA** — `icon-192.png` e `icon-512.png` generados desde el logo oficial | `icon-*.png` |
-| 12 | **Observability en Cloudflare** — `[observability] enabled = true` activa logs en el dashboard sin costo | `wrangler.toml` |
-| 13 | **Form de contraseña accesible** — `<input type="password">` envuelto en `<form>` con campo `username` oculto; el botón del ojo usa `type="button"` | `index.html` |
-| 14 | **`favicon.ico`** — generado en 3 tamaños (64/32/16px) con `<link rel="icon">` en el `<head>` | `favicon.ico`, `index.html` |
-| 15 | **`compatibility_date` bump** — versión de APIs de Cloudflare actualizada | `wrangler.toml` |
-
----
-
-## Créditos y tecnologías
-
-| Tecnología | Uso |
-|---|---|
-| [Groq](https://groq.com) | Inferencia LLM (Llama 3.3 70B) y transcripción Whisper |
-| [Cloudflare Workers](https://workers.cloudflare.com) | Proxy seguro, rate limiting, inyección de system prompt |
-| [Chart.js](https://chartjs.org) | Gráficas del rastreador de bienestar y análisis de riesgo |
-| [marked.js](https://marked.js.org) | Renderizado de Markdown en respuestas de Aura |
-| [DOMPurify](https://github.com/cure53/DOMPurify) | Sanitización de HTML generado por IA |
-| [Tesseract.js](https://tesseract.projectnaptha.com) | OCR sobre imágenes en el módulo profesional |
-| [SheetJS (xlsx)](https://sheetjs.com) | Lectura y exportación de archivos Excel |
-| [WordCloud2.js](https://github.com/timdream/wordcloud2.js) | Nube de palabras clave de riesgo |
-| [Font Awesome 6](https://fontawesome.com) | Íconografía |
+| [Groq](https://groq.com) | Inferencia LLM y transcripcion Whisper |
+| [Cloudflare Workers](https://workers.cloudflare.com) | Proxy seguro, rate limiting, system prompt |
+| [Chart.js](https://chartjs.org) | Graficas de bienestar y analisis de riesgo |
+| [jsPDF](https://github.com/parallax/jsPDF) | Generacion de PDF en el cliente |
+| [marked.js](https://marked.js.org) | Renderizado de Markdown en chat |
+| [DOMPurify](https://github.com/cure53/DOMPurify) | Sanitizacion de HTML generado por IA |
+| [Tesseract.js](https://tesseract.projectnaptha.com) | OCR sobre imagenes (carga diferida) |
+| [SheetJS](https://sheetjs.com) | Lectura y exportacion de Excel (carga diferida) |
+| [WordCloud2.js](https://github.com/timdream/wordcloud2.js) | Nube de palabras clave (carga diferida) |
+| [Font Awesome 6](https://fontawesome.com) | Iconografia |
 | [Google Fonts](https://fonts.google.com) | Playfair Display + DM Sans |
 
 ---
 
-## Líneas de crisis incluidas
+## Líneas de crisis
 
-| Línea | Número | Disponibilidad |
+Incluidas en el overlay de crisis, en `offline.html` y al final de cada PDF exportado:
+
+| Linea | Numero | Disponibilidad |
 |---|---|---|
-| CONASAMA | 800 290-0024 | 24 hrs, gratuito |
+| CONASAMA — Linea de la Vida | 800 290-0024 | 24 hrs, gratuito |
+| SAPTEL | 55 5259-8121 | 24 hrs, gratuito |
 | DIF Nacional | 800 222-2268 | 24 hrs, gratuito |
-| SSG Guanajuato | 800 002-2700 | Horario extendido |
 | Emergencias | 911 | 24 hrs |
+
+---
+
+## Privacidad por diseño
+
+- No hay base de datos propia ni cuentas de usuario
+- Las conversaciones no se almacenan en ningun servidor
+- El historial del chat solo se guarda localmente si el usuario acepta
+- El rastreador de bienestar vive unicamente en `localStorage`
+- El PDF se genera 100% en el dispositivo del usuario
+- Cada usuario solo puede ver sus propios datos
+- Borrar el cache del navegador elimina todo de forma permanente
 
 ---
 
 ## Licencia
 
-MIT © 2026 — Pablo Galván / SentinelCareAI
+MIT © 2026 — Pablo Galvan / SentinelCareAI
 
-> **Aviso clínico:** SentinelCareAI es una herramienta de apoyo y orientación. No constituye diagnóstico clínico ni reemplaza la atención profesional de salud mental. En situaciones de crisis, siempre contactar una línea de emergencias o un profesional calificado.
+> **Aviso clinico:** SentinelCareAI es una herramienta de apoyo y orientacion. No constituye diagnostico clinico ni reemplaza la atencion profesional de salud mental. En situaciones de crisis, siempre contactar una linea de emergencias o un profesional calificado.
