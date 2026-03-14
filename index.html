@@ -3296,6 +3296,54 @@ function saveMoodHistory() {
   localStorage.setItem('sentinelMoodHistory', JSON.stringify(moodHistory));
 }
 
+// ── Genera un resumen en lenguaje natural del historial emocional ──
+// Se inyecta en el contexto de Aura para que sepa cómo se ha sentido la persona.
+function buildMoodContext() {
+  if (!moodHistory || moodHistory.length === 0) return null;
+
+  const moodLabels = { 5: 'Muy bien', 4: 'Bien', 3: 'Regular', 2: 'Mal', 1: 'Muy mal' };
+  const moodDesc   = { 5: 'muy bien',    4: 'bien',    3: 'regular',   2: 'mal',   1: 'muy mal'        };
+
+  const recent = moodHistory.slice(-14); // últimos 14 días máximo
+  const today  = new Date().toISOString().split('T')[0];
+
+  // Build human-readable list
+  const lines = recent.map(function(e) {
+    const [y, m, d] = e.date.split('-');
+    const isToday   = e.date === today;
+    const dayLabel  = isToday ? 'hoy' : d + '/' + m;
+    return dayLabel + ': ' + moodLabels[e.value];
+  });
+
+  // Trend analysis
+  let trend = '';
+  if (recent.length >= 3) {
+    const first = recent.slice(0, Math.floor(recent.length / 2));
+    const last  = recent.slice(Math.floor(recent.length / 2));
+    const avgFirst = first.reduce((s, e) => s + e.value, 0) / first.length;
+    const avgLast  = last.reduce((s,  e) => s + e.value, 0) / last.length;
+    const diff = avgLast - avgFirst;
+    if      (diff >  0.6) trend = 'Su estado emocional ha mejorado en los últimos días.';
+    else if (diff < -0.6) trend = 'Su estado emocional ha empeorado en los últimos días - ten esto muy presente.';
+    else                  trend = 'Su estado emocional se ha mantenido relativamente estable.';
+  }
+
+  // Today's mood
+  const todayEntry = moodHistory.find(e => e.date === today);
+  const todayLine  = todayEntry
+    ? 'Hoy se ha registrado sintiéndose ' + moodDesc[todayEntry.value] + '.'
+    : 'Hoy aún no ha registrado su estado de ánimo.';
+
+  return [
+    'CONTEXTO EMOCIONAL DE LA PERSONA (del rastreador de bienestar):',
+    'La persona ha registrado cómo se ha sentido en los últimos días:',
+    lines.join(' | '),
+    todayLine,
+    trend,
+    'Usa este contexto con sutileza — no lo menciones directamente a menos que sea relevante o la persona lo traiga a la conversación. Pero tenlo presente para entender cómo está y adaptar tu acompañamiento.'
+  ].filter(Boolean).join('\n');
+}
+
 function selectMood(value) {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   // Actualizar o insertar nuevo registro
@@ -4888,8 +4936,8 @@ let pendingFiles = [];
 //     de salida. El borrado es inmediato e irrevocable.
 // ══════════════════════════════════════════════
 const CHAT_STORAGE_KEY  = 'sentinelChatSession';
-const CHAT_MAX_DAYS     = 30;   // auto-expire tras 30 días sin abrir
-const CHAT_MAX_MESSAGES = 60;  // máx mensajes almacenados
+const CHAT_MAX_DAYS     = 7;   // auto-expire tras 7 días sin abrir
+const CHAT_MAX_MESSAGES = 30;  // máx mensajes almacenados
 
 // Llamada SOLO desde confirmSaveSession() — nunca automáticamente
 function saveChatSession() {
@@ -5491,6 +5539,12 @@ async function sendMessage() {
   // aquí solo enviamos el historial de usuario/asistente.
   const groqMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
 
+  // Inject mood history context as a second system message if available
+  const moodCtx = buildMoodContext();
+  if (moodCtx) {
+    groqMessages.push({ role: 'system', content: moodCtx });
+  }
+
   chatHistory.forEach(function(m) {
     groqMessages.push({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text });
   });
@@ -5909,39 +5963,186 @@ function exportChatPDF() {
 
 
 
+// ══════════════════════════════════════════════════════════════
+// PWA INSTALL — detección de plataforma y prompt de instalación
+//
+// Desktop (Windows / Linux / macOS):
+//   → Botón fijo "Descargar app" en la esquina inferior derecha.
+//   → Al hacer clic dispara el beforeinstallprompt nativo del navegador.
+//
+// Android:
+//   → Banner flotante en la parte inferior (comportamiento original).
+//
+// iOS:
+//   → Instrucción de "Añadir a pantalla de inicio" (Safari no soporta
+//     beforeinstallprompt, solo permite instalación manual).
+// ══════════════════════════════════════════════════════════════
+
+let _deferredInstallPrompt = null;  // captura el evento beforeinstallprompt
+
+// ── Detectar plataforma ───────────────────────────────────────
+function _getPlatform() {
+  const ua = navigator.userAgent || '';
+  const isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+  const isMobile  = isIOS || isAndroid || /Mobi|Mobile/.test(ua);
+  return { isIOS, isAndroid, isMobile, isDesktop: !isMobile };
+}
+
+// ── Capturar el prompt antes de que el navegador lo descarte ──
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+
+  const plat = _getPlatform();
+
+  // Ya está instalada — no mostrar nada
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  // Ya fue descartada en esta sesión
+  if (sessionStorage.getItem('pwa-install-dismissed')) return;
+
+  if (plat.isDesktop) {
+    // Windows / Linux / macOS → botón fijo esquina inferior derecha
+    _showDesktopInstallBtn();
+  } else if (plat.isAndroid) {
+    // Android → banner flotante original
+    showInstallBanner();
+  }
+  // iOS: se maneja por separado abajo (sin beforeinstallprompt)
+});
+
+// ── Ejecutar instalación ──────────────────────────────────────
+function installApp() {
+  if (_deferredInstallPrompt) {
+    _deferredInstallPrompt.prompt();
+    _deferredInstallPrompt.userChoice.then(function(result) {
+      if (result.outcome === 'accepted') {
+        hideInstallBanner();
+        _hideDesktopInstallBtn();
+      }
+      _deferredInstallPrompt = null;
+    });
+  }
+}
+
+// ── Botón de escritorio (Windows / Linux / macOS) ────────────
+function _showDesktopInstallBtn() {
+  if (document.getElementById('pwa-desktop-btn')) return;
+  const btn = document.createElement('div');
+  btn.id = 'pwa-desktop-btn';
+  btn.innerHTML =
+    '<button onclick="installApp()" title="Instalar SentinelCareAI como aplicación">' +
+      '<i class="fas fa-download"></i>' +
+      '<span>Descargar app</span>' +
+    '</button>' +
+    '<button class="pwa-close" onclick="_hideDesktopInstallBtn()" title="Cerrar">' +
+      '<i class="fas fa-xmark"></i>' +
+    '</button>';
+  btn.style.cssText =
+    'position:fixed;bottom:28px;right:24px;z-index:9100;' +
+    'display:flex;align-items:center;gap:4px;' +
+    'background:var(--card-bg);border:1.5px solid var(--border);' +
+    'border-radius:14px;padding:4px 6px 4px 4px;' +
+    'box-shadow:0 8px 28px rgba(61,122,138,0.22);' +
+    'backdrop-filter:blur(14px);animation:fadeIn 0.4s ease;';
+
+  // Main install button style
+  btn.querySelector('button:first-child').style.cssText =
+    'background:linear-gradient(135deg,var(--sage),var(--teal));' +
+    'border:none;border-radius:10px;padding:8px 16px;color:white;' +
+    'font-size:0.85rem;font-weight:600;cursor:pointer;' +
+    "font-family:'DM Sans',sans-serif;" +
+    'display:flex;align-items:center;gap:7px;transition:opacity 0.2s;';
+
+  // Close button style
+  btn.querySelector('.pwa-close').style.cssText =
+    'background:none;border:none;color:var(--text-light);' +
+    'cursor:pointer;padding:4px 6px;font-size:0.85rem;' +
+    'display:flex;align-items:center;transition:color 0.2s;';
+
+  document.body.appendChild(btn);
+}
+
+function _hideDesktopInstallBtn() {
+  const btn = document.getElementById('pwa-desktop-btn');
+  if (btn) btn.remove();
+  sessionStorage.setItem('pwa-install-dismissed', '1');
+}
+
+// ── Banner Android (comportamiento original) ──────────────────
 function showInstallBanner() {
   if (document.getElementById('pwa-banner')) return;
-  const b = document.createElement('div');
+  var b = document.createElement('div');
   b.id = 'pwa-banner';
-  b.innerHTML = `
-    <div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-      background:var(--card-bg);border:1.5px solid var(--border);border-radius:18px;
-      padding:14px 18px;box-shadow:var(--shadow-hover);display:flex;align-items:center;
-      gap:14px;z-index:9000;max-width:340px;width:90%;backdrop-filter:blur(16px);
-      animation:fadeIn 0.4s ease;">
-      <div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;
-        background:linear-gradient(135deg,var(--sage),var(--teal));
-        display:flex;align-items:center;justify-content:center;font-size:22px;">💚</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:2px;">Instalar SentinelCare</div>
-        <div style="font-size:0.78rem;color:var(--text-mid);line-height:1.4;">Accede más rápido desde tu pantalla de inicio</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-        <button onclick="installApp()" style="background:linear-gradient(135deg,var(--sage),var(--teal));
-          border:none;border-radius:10px;padding:7px 14px;color:white;font-size:0.8rem;
-          font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Instalar</button>
-        <button onclick="hideInstallBanner()" style="background:none;border:1px solid var(--border);
-          border-radius:10px;padding:5px 14px;color:var(--text-light);font-size:0.75rem;
-          cursor:pointer;font-family:'DM Sans',sans-serif;">Ahora no</button>
-      </div>
-    </div>`;
+  b.innerHTML = [
+    '<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);',
+    'background:var(--card-bg);border:1.5px solid var(--border);border-radius:18px;',
+    'padding:14px 18px;box-shadow:var(--shadow-hover);display:flex;align-items:center;',
+    'gap:14px;z-index:9000;max-width:340px;width:90%;backdrop-filter:blur(16px);',
+    'animation:fadeIn 0.4s ease;">',
+    '<div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;',
+    'background:linear-gradient(135deg,var(--sage),var(--teal));',
+    'display:flex;align-items:center;justify-content:center;">',
+    '<img src="icon-192.png" style="width:36px;height:36px;border-radius:8px;"></div>',
+    '<div style="flex:1;min-width:0;">',
+    '<div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:2px;">Instalar SentinelCare</div>',
+    '<div style="font-size:0.78rem;color:var(--text-mid);line-height:1.4;">Accede más rápido desde tu pantalla de inicio</div>',
+    '</div>',
+    '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">',
+    '<button onclick="installApp()" style="background:linear-gradient(135deg,var(--sage),var(--teal));',
+    'border:none;border-radius:10px;padding:7px 14px;color:white;',
+    'font-size:0.8rem;font-weight:600;cursor:pointer;">Instalar</button>',
+    '<button onclick="hideInstallBanner()" style="background:none;border:1px solid var(--border);',
+    'border-radius:10px;padding:5px 14px;color:var(--text-light);',
+    'font-size:0.75rem;cursor:pointer;">Ahora no</button>',
+    '</div></div>'
+  ].join('');
   document.body.appendChild(b);
 }
 
 function hideInstallBanner() {
   const b = document.getElementById('pwa-banner');
   if (b) b.remove();
+  sessionStorage.setItem('pwa-install-dismissed', '1');
 }
+
+// ── iOS: instrucción manual (Safari no soporta beforeinstallprompt) ──
+(function() {
+  const plat = _getPlatform();
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+                      window.navigator.standalone === true;
+  if (!plat.isIOS || isInstalled) return;
+  if (sessionStorage.getItem('pwa-install-dismissed')) return;
+
+  // Mostrar banner con instrucción para Safari iOS
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      if (document.getElementById('pwa-banner') || document.getElementById('pwa-desktop-btn')) return;
+      const b = document.createElement('div');
+      b.id = 'pwa-banner';
+      b.innerHTML =
+        '<div style="position:fixed;bottom:0;left:0;right:0;' +
+        'background:var(--card-bg);border-top:1.5px solid var(--border);' +
+        'padding:16px 20px;box-shadow:0 -8px 24px rgba(0,0,0,0.12);' +
+        'z-index:9000;display:flex;align-items:flex-start;gap:12px;' +
+        'backdrop-filter:blur(16px);animation:fadeIn 0.4s ease;">' +
+          '<div style="font-size:1.6rem;flex-shrink:0;margin-top:2px;">📲</div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:4px;">Instalar SentinelCareAI</div>' +
+            '<div style="font-size:0.8rem;color:var(--text-mid);line-height:1.5;">' +
+              'Toca <strong style="color:var(--teal);">Compartir</strong> <span style="font-size:1rem;">&#x2197;&#xFE0F;</span> ' +
+              'y luego <strong style="color:var(--teal);">"Añadir a pantalla de inicio"</strong>' +
+            '</div>' +
+          '</div>' +
+          '<button onclick="hideInstallBanner()" style="background:none;border:none;' +
+          'color:var(--text-light);font-size:1.1rem;cursor:pointer;padding:4px;flex-shrink:0;">' +
+            '<i class="fas fa-xmark"></i>' +
+          '</button>' +
+        '</div>';
+      document.body.appendChild(b);
+    }, 3500); // Esperar un poco para no interrumpir la carga
+  });
+})();
 </script>
 
 </body>
