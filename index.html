@@ -3837,6 +3837,7 @@ function _doLaunchProfessional(profile) {
     }
   }
   switchProTab('analisys');
+  history.pushState({ screen: 's-professional' }, '');
   window.scrollTo(0, 0);
 }
 
@@ -3857,10 +3858,12 @@ function enterApp(profile) {
       greeting.textContent = 'Hola — estamos aquí contigo';
     }
     setTimeout(updateMoodChart, 100);
+    history.pushState({ screen: 's-personal' }, '');
     window.scrollTo(0, 0);
   }
   else if (profile === 'padre') {
     document.getElementById('s-padres').classList.add('active');
+    history.pushState({ screen: 's-padres' }, '');
     window.scrollTo(0, 0);
   }
   else {
@@ -3869,6 +3872,7 @@ function enterApp(profile) {
     document.getElementById('pro-access-input').value = '';
     document.getElementById('pro-access-error').classList.remove('show');
     document.getElementById('s-pro-access').classList.add('active');
+    history.pushState({ screen: 's-pro-access' }, '');
     setTimeout(() => document.getElementById('pro-access-input').focus(), 150);
     window.scrollTo(0, 0);
   }
@@ -5042,6 +5046,7 @@ function openChat() {
   } else {
     document.getElementById('chat-badge').textContent = currentProfile === 'joven' ? 'Joven' : 'Adulto';
   }
+  history.pushState({ screen: 's-chat' }, '');
   window.scrollTo(0, 0);
 
   // Only load/init if messages area is empty (avoid duplication on re-open)
@@ -5968,47 +5973,64 @@ function exportChatPDF() {
 //
 // Desktop (Windows / Linux / macOS):
 //   → Botón fijo "Descargar app" en la esquina inferior derecha.
-//   → Al hacer clic dispara el beforeinstallprompt nativo del navegador.
+//   → Al hacer clic dispara el beforeinstallprompt nativo.
 //
 // Android:
 //   → Banner flotante en la parte inferior (comportamiento original).
 //
 // iOS:
-//   → Instrucción de "Añadir a pantalla de inicio" (Safari no soporta
-//     beforeinstallprompt, solo permite instalación manual).
+//   → No se muestra nada. Safari no soporta beforeinstallprompt
+//     y la instalación manual es poco intuitiva para el usuario.
 // ══════════════════════════════════════════════════════════════
 
-let _deferredInstallPrompt = null;  // captura el evento beforeinstallprompt
+let _deferredInstallPrompt = null;
 
 // ── Detectar plataforma ───────────────────────────────────────
 function _getPlatform() {
-  const ua = navigator.userAgent || '';
-  const isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-  const isAndroid = /Android/.test(ua);
-  const isMobile  = isIOS || isAndroid || /Mobi|Mobile/.test(ua);
-  return { isIOS, isAndroid, isMobile, isDesktop: !isMobile };
+  var ua = navigator.userAgent || '';
+  var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  var isAndroid = /Android/.test(ua);
+  var isMobile  = isIOS || isAndroid || /Mobi|Mobile/.test(ua);
+  return { isIOS: isIOS, isAndroid: isAndroid, isMobile: isMobile, isDesktop: !isMobile };
 }
 
-// ── Capturar el prompt antes de que el navegador lo descarte ──
+// ── Capturar beforeinstallprompt ──────────────────────────────
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   _deferredInstallPrompt = e;
 
-  const plat = _getPlatform();
+  var plat = _getPlatform();
 
-  // Ya está instalada — no mostrar nada
-  if (window.matchMedia('(display-mode: standalone)').matches) return;
-  // Ya fue descartada en esta sesión
-  if (sessionStorage.getItem('pwa-install-dismissed')) return;
+  // Habilitar botón de escritorio si ya está visible
+  var desktopBtn = document.getElementById('pwa-desktop-btn');
+  if (desktopBtn) {
+    var installBtn = desktopBtn.querySelector('button:first-child');
+    if (installBtn) { installBtn.disabled = false; installBtn.style.opacity = '1'; }
+  }
 
-  if (plat.isDesktop) {
-    // Windows / Linux / macOS → botón fijo esquina inferior derecha
-    _showDesktopInstallBtn();
-  } else if (plat.isAndroid) {
-    // Android → banner flotante original
+  // Mostrar banner en Android si no está instalado y no fue descartado
+  if (plat.isAndroid) {
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (sessionStorage.getItem('pwa-install-dismissed')) return;
     showInstallBanner();
   }
-  // iOS: se maneja por separado abajo (sin beforeinstallprompt)
+});
+
+// ── Al cargar la página ───────────────────────────────────────
+window.addEventListener('load', function() {
+  var plat        = _getPlatform();
+  var isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+  var dismissed   = sessionStorage.getItem('pwa-install-dismissed');
+
+  if (isInstalled || dismissed) return;
+
+  if (plat.isDesktop) {
+    // Mostrar botón de escritorio tras breve espera
+    setTimeout(_showDesktopInstallBtn, 1800);
+  }
+  // Android y iOS: no hacer nada aquí
+  // Android: el banner aparece cuando beforeinstallprompt se dispara
+  // iOS: no se muestra nada
 });
 
 // ── Ejecutar instalación ──────────────────────────────────────
@@ -6022,127 +6044,215 @@ function installApp() {
       }
       _deferredInstallPrompt = null;
     });
+  } else {
+    // beforeinstallprompt aún no llegó → instrucción manual
+    var ua      = navigator.userAgent || '';
+    var isEdge  = /Edg\//.test(ua);
+    var isChr   = /Chrome\//.test(ua) && !isEdge;
+    var isFF    = /Firefox\//.test(ua);
+    var msg;
+    if (isChr || isEdge) {
+      msg = 'Para instalar:\n\n1. Clic en los tres puntos (...) de Chrome/Edge\n2. Selecciona "Instalar SentinelCareAI"\n\nSi no ves esa opcion asegurate de estar en HTTPS.';
+    } else if (isFF) {
+      msg = 'Firefox no soporta instalacion de PWA en escritorio.\n\nUsa Chrome o Microsoft Edge para instalar SentinelCareAI como app.';
+    } else {
+      msg = 'Busca el icono de instalacion en la barra de tu navegador (junto a la barra de direcciones).';
+    }
+    alert(msg);
   }
 }
 
 // ── Botón de escritorio (Windows / Linux / macOS) ────────────
 function _showDesktopInstallBtn() {
   if (document.getElementById('pwa-desktop-btn')) return;
-  const btn = document.createElement('div');
-  btn.id = 'pwa-desktop-btn';
-  btn.innerHTML =
-    '<button onclick="installApp()" title="Instalar SentinelCareAI como aplicación">' +
+
+  var wrap = document.createElement('div');
+  wrap.id = 'pwa-desktop-btn';
+  wrap.innerHTML =
+    '<button id="pwa-install-main" onclick="installApp()" ' +
+    'title="Instalar SentinelCareAI como app de escritorio">' +
       '<i class="fas fa-download"></i>' +
       '<span>Descargar app</span>' +
     '</button>' +
     '<button class="pwa-close" onclick="_hideDesktopInstallBtn()" title="Cerrar">' +
       '<i class="fas fa-xmark"></i>' +
     '</button>';
-  btn.style.cssText =
+
+  wrap.style.cssText =
     'position:fixed;bottom:28px;right:24px;z-index:9100;' +
     'display:flex;align-items:center;gap:4px;' +
-    'background:var(--card-bg);border:1.5px solid var(--border);' +
+    'background:var(--card-bg);' +
+    'border:1.5px solid var(--border);' +
     'border-radius:14px;padding:4px 6px 4px 4px;' +
     'box-shadow:0 8px 28px rgba(61,122,138,0.22);' +
-    'backdrop-filter:blur(14px);animation:fadeIn 0.4s ease;';
+    'backdrop-filter:blur(14px);' +
+    'animation:fadeIn 0.4s ease;';
 
-  // Main install button style
-  btn.querySelector('button:first-child').style.cssText =
+  document.body.appendChild(wrap);
+
+  var mainBtn = document.getElementById('pwa-install-main');
+  mainBtn.style.cssText =
     'background:linear-gradient(135deg,var(--sage),var(--teal));' +
-    'border:none;border-radius:10px;padding:8px 16px;color:white;' +
+    'border:none;border-radius:10px;padding:9px 18px;color:white;' +
     'font-size:0.85rem;font-weight:600;cursor:pointer;' +
     "font-family:'DM Sans',sans-serif;" +
     'display:flex;align-items:center;gap:7px;transition:opacity 0.2s;';
 
-  // Close button style
-  btn.querySelector('.pwa-close').style.cssText =
+  wrap.querySelector('.pwa-close').style.cssText =
     'background:none;border:none;color:var(--text-light);' +
-    'cursor:pointer;padding:4px 6px;font-size:0.85rem;' +
+    'cursor:pointer;padding:4px 6px;font-size:0.9rem;' +
     'display:flex;align-items:center;transition:color 0.2s;';
 
-  document.body.appendChild(btn);
+  // Si beforeinstallprompt no llegó aún, botón sigue activo
+  // (mostrará instrucciones manuales al click)
 }
 
 function _hideDesktopInstallBtn() {
-  const btn = document.getElementById('pwa-desktop-btn');
+  var btn = document.getElementById('pwa-desktop-btn');
   if (btn) btn.remove();
   sessionStorage.setItem('pwa-install-dismissed', '1');
 }
 
-// ── Banner Android (comportamiento original) ──────────────────
+// ══════════════════════════════════════════════
+// MANEJO DEL BOTÓN "ATRÁS" DEL SISTEMA OPERATIVO
+// ──────────────────────────────────────────────
+// La app usa pantallas CSS (display:none/flex), no URLs distintas.
+// Sin este código, el botón "atrás" del celular cierra la app porque
+// no hay nada en el historial del navegador que interceptar.
+//
+// Solución: cada función de navegación ya llama history.pushState()
+// con el nombre de la pantalla activa. El listener "popstate" intercepta
+// el gesto "atrás" y navega internamente en lugar de salir.
+// ══════════════════════════════════════════════
+
+// Estado inicial: reemplazamos el estado vacío con 's-landing'.
+(function() {
+  history.replaceState({ screen: 's-landing' }, '');
+})();
+
+window.addEventListener('popstate', function(event) {
+  if (!event.state || !event.state.screen) return;
+
+  var screen = event.state.screen;
+
+  // ── Cerrar overlays/modales primero ──────────────────────────
+  var crisisOverlay = document.getElementById('crisis-overlay');
+  if (crisisOverlay && crisisOverlay.classList.contains('active')) {
+    closeCrisisMode();
+    history.pushState(event.state, '');
+    return;
+  }
+
+  var exitModal = document.getElementById('exit-modal');
+  if (exitModal && exitModal.style.display === 'flex') {
+    closeExitModal();
+    history.pushState(event.state, '');
+    return;
+  }
+
+  var saveModal = document.getElementById('save-consent-modal');
+  if (saveModal && saveModal.classList.contains('open')) {
+    closeSaveConsentModal();
+    history.pushState(event.state, '');
+    return;
+  }
+
+  // ── Navegar según pantalla destino ────────────────────────────
+  if (screen === 's-chat') {
+    // Estaba en el chat → abrir modal de salida
+    history.pushState({ screen: 's-chat' }, '');
+    goBackFromChat();
+    return;
+  }
+
+  if (screen === 's-professional' || screen === 's-pro-access' ||
+      screen === 's-personal'     || screen === 's-padres') {
+    // Cualquiera de estas → volver a landing
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('s-landing').classList.add('active');
+    window.scrollTo(0, 0);
+    return;
+  }
+  // s-landing: el navegador puede salir normalmente (no hacemos nada).
+});
+
+// ── Banner Android (flotante, parte inferior) ─────────────────
 function showInstallBanner() {
   if (document.getElementById('pwa-banner')) return;
+
   var b = document.createElement('div');
   b.id = 'pwa-banner';
-  b.innerHTML = [
-    '<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);',
-    'background:var(--card-bg);border:1.5px solid var(--border);border-radius:18px;',
-    'padding:14px 18px;box-shadow:var(--shadow-hover);display:flex;align-items:center;',
-    'gap:14px;z-index:9000;max-width:340px;width:90%;backdrop-filter:blur(16px);',
-    'animation:fadeIn 0.4s ease;">',
-    '<div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;',
-    'background:linear-gradient(135deg,var(--sage),var(--teal));',
-    'display:flex;align-items:center;justify-content:center;">',
-    '<img src="icon-192.png" style="width:36px;height:36px;border-radius:8px;"></div>',
-    '<div style="flex:1;min-width:0;">',
-    '<div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:2px;">Instalar SentinelCare</div>',
-    '<div style="font-size:0.78rem;color:var(--text-mid);line-height:1.4;">Accede más rápido desde tu pantalla de inicio</div>',
-    '</div>',
-    '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">',
-    '<button onclick="installApp()" style="background:linear-gradient(135deg,var(--sage),var(--teal));',
-    'border:none;border-radius:10px;padding:7px 14px;color:white;',
-    'font-size:0.8rem;font-weight:600;cursor:pointer;">Instalar</button>',
-    '<button onclick="hideInstallBanner()" style="background:none;border:1px solid var(--border);',
-    'border-radius:10px;padding:5px 14px;color:var(--text-light);',
-    'font-size:0.75rem;cursor:pointer;">Ahora no</button>',
-    '</div></div>'
-  ].join('');
+  b.innerHTML =
+    '<div style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);" +' +
+    '"id=\'pwa-banner-inner\'>' +
+    '<div style="display:flex;align-items:center;gap:14px;">' +
+    '<div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;' +
+    'background:linear-gradient(135deg,var(--sage),var(--teal));' +
+    'display:flex;align-items:center;justify-content:center;">' +
+    '<img src="icon-192.png" style="width:36px;height:36px;border-radius:8px;" alt="">' +
+    '</div>' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:2px;">' +
+    'Instalar SentinelCare</div>' +
+    '<div style="font-size:0.78rem;color:var(--text-mid);line-height:1.4;">' +
+    'Accede más rápido desde tu pantalla de inicio</div>' +
+    '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">' +
+    '<button onclick="installApp()" style="background:linear-gradient(135deg,var(--sage),var(--teal));' +
+    'border:none;border-radius:10px;padding:7px 14px;color:white;' +
+    'font-size:0.8rem;font-weight:600;cursor:pointer;">Instalar</button>' +
+    '<button onclick="hideInstallBanner()" style="background:none;' +
+    'border:1px solid var(--border);border-radius:10px;padding:5px 14px;' +
+    'color:var(--text-light);font-size:0.75rem;cursor:pointer;">Ahora no</button>' +
+    '</div></div></div>';
+
+  // Style the outer wrapper
+  b.style.cssText = 'position:fixed;bottom:80px;left:0;right:0;z-index:9000;' +
+    'display:flex;justify-content:center;padding:0 16px;pointer-events:none;';
+
+  var inner = document.createElement('div');
+  inner.style.cssText =
+    'background:var(--card-bg);border:1.5px solid var(--border);' +
+    'border-radius:18px;padding:14px 18px;' +
+    'box-shadow:var(--shadow-hover);' +
+    'display:flex;align-items:center;gap:14px;' +
+    'max-width:340px;width:100%;' +
+    'backdrop-filter:blur(16px);' +
+    'animation:fadeIn 0.4s ease;' +
+    'pointer-events:all;';
+
+  inner.innerHTML =
+    '<div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;' +
+    'background:linear-gradient(135deg,var(--sage),var(--teal));' +
+    'display:flex;align-items:center;justify-content:center;">' +
+    '<img src="icon-192.png" style="width:36px;height:36px;border-radius:8px;" alt=""></div>' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:2px;">' +
+    'Instalar SentinelCare</div>' +
+    '<div style="font-size:0.78rem;color:var(--text-mid);line-height:1.4;">' +
+    'Accede más rápido desde tu pantalla de inicio</div></div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">' +
+    '<button onclick="installApp()" style="background:linear-gradient(135deg,var(--sage),var(--teal));' +
+    'border:none;border-radius:10px;padding:7px 14px;color:white;' +
+    'font-size:0.8rem;font-weight:600;cursor:pointer;">Instalar</button>' +
+    '<button onclick="hideInstallBanner()" style="background:none;' +
+    'border:1px solid var(--border);border-radius:10px;padding:5px 14px;' +
+    'color:var(--text-light);font-size:0.75rem;cursor:pointer;">Ahora no</button>' +
+    '</div>';
+
+  b.innerHTML = '';
+  b.style.cssText = 'position:fixed;bottom:80px;left:0;right:0;z-index:9000;' +
+    'display:flex;justify-content:center;padding:0 16px;';
+  b.appendChild(inner);
   document.body.appendChild(b);
 }
 
 function hideInstallBanner() {
-  const b = document.getElementById('pwa-banner');
+  var b = document.getElementById('pwa-banner');
   if (b) b.remove();
   sessionStorage.setItem('pwa-install-dismissed', '1');
 }
 
-// ── iOS: instrucción manual (Safari no soporta beforeinstallprompt) ──
-(function() {
-  const plat = _getPlatform();
-  const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
-                      window.navigator.standalone === true;
-  if (!plat.isIOS || isInstalled) return;
-  if (sessionStorage.getItem('pwa-install-dismissed')) return;
-
-  // Mostrar banner con instrucción para Safari iOS
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      if (document.getElementById('pwa-banner') || document.getElementById('pwa-desktop-btn')) return;
-      const b = document.createElement('div');
-      b.id = 'pwa-banner';
-      b.innerHTML =
-        '<div style="position:fixed;bottom:0;left:0;right:0;' +
-        'background:var(--card-bg);border-top:1.5px solid var(--border);' +
-        'padding:16px 20px;box-shadow:0 -8px 24px rgba(0,0,0,0.12);' +
-        'z-index:9000;display:flex;align-items:flex-start;gap:12px;' +
-        'backdrop-filter:blur(16px);animation:fadeIn 0.4s ease;">' +
-          '<div style="font-size:1.6rem;flex-shrink:0;margin-top:2px;">📲</div>' +
-          '<div style="flex:1;">' +
-            '<div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);margin-bottom:4px;">Instalar SentinelCareAI</div>' +
-            '<div style="font-size:0.8rem;color:var(--text-mid);line-height:1.5;">' +
-              'Toca <strong style="color:var(--teal);">Compartir</strong> <span style="font-size:1rem;">&#x2197;&#xFE0F;</span> ' +
-              'y luego <strong style="color:var(--teal);">"Añadir a pantalla de inicio"</strong>' +
-            '</div>' +
-          '</div>' +
-          '<button onclick="hideInstallBanner()" style="background:none;border:none;' +
-          'color:var(--text-light);font-size:1.1rem;cursor:pointer;padding:4px;flex-shrink:0;">' +
-            '<i class="fas fa-xmark"></i>' +
-          '</button>' +
-        '</div>';
-      document.body.appendChild(b);
-    }, 3500); // Esperar un poco para no interrumpir la carga
-  });
-})();
 </script>
 
 </body>
